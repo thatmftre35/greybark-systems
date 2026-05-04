@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create account // GreyBark Systems</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://AUTH/SIGNUP &nbsp; <span class="blink">█</span></div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li id="nav-auth"></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-bar">
+      <span>GBS_TERMINAL // CREATE ACCOUNT</span>
+      <div class="term-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="auth-body">
+      <div class="hero-tag" style="margin-bottom: 12px;">Authentication // Email Verification Required</div>
+      <h1 style="font-size: clamp(36px, 4vw, 48px); margin-bottom: 12px;">
+        Create <span class="hl">account</span>
+      </h1>
+      <p class="auth-lead">
+        Sign up with email + password. We'll send a verification link.
+        Holdings detail unlocks once verified.
+      </p>
+
+      <form id="signup-form" class="auth-form" novalidate>
+        <label class="auth-field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label class="auth-field">
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+          <small class="auth-hint">At least 8 characters.</small>
+        </label>
+
+        <div class="auth-msg" id="auth-msg" hidden></div>
+
+        <div class="cta-row" style="margin-top: 18px;">
+          <button type="submit" class="btn primary" id="signup-btn">Create account</button>
+          <a href="login.html" class="btn">I already have one</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  const el = document.getElementById('clock'); if (el) el.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+function showMsg(text, kind) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg ' + (kind || '');
+  el.hidden = false;
+}
+
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true;
+  const form = e.currentTarget;
+  const email = form.email.value.trim();
+  const password = form.password.value;
+
+  const redirect = window.location.origin + '/email-verified';
+  const { data, error } = await window.sb.auth.signUp({
+    email, password,
+    options: { emailRedirectTo: redirect },
+  });
+  if (error) {
+    showMsg(error.message || 'Sign-up failed.', 'error');
+    btn.disabled = false;
+    return;
+  }
+  // If "Confirm email" is enabled in Supabase, session is null until verification.
+  showMsg('Check your inbox to verify your email.', 'ok');
+  form.reset();
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>

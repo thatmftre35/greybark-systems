@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in // GreyBark Systems</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://AUTH/SIGNIN &nbsp; <span class="blink">█</span></div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li id="nav-auth"></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-bar">
+      <span>GBS_TERMINAL // SIGNIN</span>
+      <div class="term-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="auth-body">
+      <div class="hero-tag" style="margin-bottom: 12px;">Authentication // Required for Holdings</div>
+      <h1 style="font-size: clamp(36px, 4vw, 48px); margin-bottom: 12px;">
+        Sign <span class="hl">in</span>
+      </h1>
+      <p class="auth-lead">
+        Holdings detail (ETF positions, fund position lists) requires an account.
+        Free to create.
+      </p>
+
+      <form id="login-form" class="auth-form" novalidate>
+        <label class="auth-field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label class="auth-field">
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+
+        <div class="auth-msg" id="auth-msg" hidden></div>
+
+        <div class="cta-row" style="margin-top: 18px;">
+          <button type="submit" class="btn primary" id="login-btn">Sign in</button>
+          <a href="signup.html" class="btn">Create account</a>
+        </div>
+
+        <div class="auth-extra">
+          <a href="#" id="forgot-link">Forgot password?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  const el = document.getElementById('clock'); if (el) el.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+function showMsg(text, kind) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg ' + (kind || '');
+  el.hidden = false;
+}
+function hideMsg() {
+  document.getElementById('auth-msg').hidden = true;
+}
+
+function nextUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('next');
+  if (!raw) return 'index.html';
+  // Only allow same-origin paths
+  try {
+    const decoded = decodeURIComponent(raw);
+    if (decoded.startsWith('/') || /^[a-z0-9_\-./?=&%]+$/i.test(decoded)) return decoded;
+  } catch(_) {}
+  return 'index.html';
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideMsg();
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  const form = e.currentTarget;
+  const email = form.email.value.trim();
+  const password = form.password.value;
+  const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    showMsg(error.message || 'Sign-in failed.', 'error');
+    btn.disabled = false;
+    return;
+  }
+  showMsg('Signed in. Redirecting…', 'ok');
+  window.location.href = nextUrl();
+});
+
+document.getElementById('forgot-link').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const email = document.querySelector('input[name=email]').value.trim();
+  if (!email) {
+    showMsg('Enter your email above first, then click Forgot password.', 'error');
+    return;
+  }
+  const redirect = window.location.origin + '/email-verified';
+  const { error } = await window.sb.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+  if (error) showMsg(error.message, 'error');
+  else showMsg('Password reset email sent. Check your inbox.', 'ok');
+});
+
+// If already signed in, jump straight through
+(async () => {
+  const session = await window.GBSAuth.getSession();
+  if (session) window.location.href = nextUrl();
+})();
+</script>
+</body>
+</html>

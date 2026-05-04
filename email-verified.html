@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email verified // GreyBark Systems</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://AUTH/VERIFIED &nbsp; <span class="blink">█</span> &nbsp; OK</div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li id="nav-auth"></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="auth-wrap">
+  <div class="auth-card auth-card-success">
+    <div class="auth-bar">
+      <span>GBS_TERMINAL // VERIFICATION</span>
+      <div class="term-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="auth-body" style="text-align: center;">
+      <div class="hero-tag" style="margin-bottom: 14px; justify-content: center;">Status // OK</div>
+      <h1 style="font-size: clamp(40px, 5vw, 64px); margin-bottom: 16px;">
+        Email <span class="hl">verified.</span>
+      </h1>
+      <p class="auth-lead" id="verified-msg">
+        Your account is active. Holdings detail is now unlocked.
+      </p>
+
+      <pre class="ascii" style="text-align: center; margin: 22px auto 14px; max-width: 360px;">  ┌──────────────────────┐
+  │                      │
+  │   ✓  ACCOUNT  OK     │
+  │                      │
+  └──────────────────────┘</pre>
+
+      <div class="cta-row" style="justify-content: center; margin-top: 18px;">
+        <a href="leveraged-etfs.html" class="btn primary">Continue to Leveraged ETFs</a>
+        <a href="funds.html" class="btn">View Holdings</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  const el = document.getElementById('clock'); if (el) el.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+// When Supabase redirects here after email confirmation, the URL has
+// a hash fragment like #access_token=...&type=signup. The client SDK
+// (with detectSessionInUrl: true) automatically picks it up and stores
+// the session. We just check the result and adjust the message.
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const errorDescription = params.get('error_description');
+  const msg = document.getElementById('verified-msg');
+  if (errorDescription) {
+    msg.textContent = decodeURIComponent(errorDescription).replace(/\+/g, ' ');
+    return;
+  }
+  // Wait a tick for SDK to ingest the hash, then read the user.
+  setTimeout(async () => {
+    const user = await window.GBSAuth.getUser();
+    if (user && user.email) {
+      msg.innerHTML = 'Signed in as <strong style="color: var(--white)">' + user.email + '</strong>. Holdings detail is now unlocked.';
+    }
+  }, 400);
+})();
+</script>
+</body>
+</html>

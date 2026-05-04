@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -37,6 +40,7 @@
         <li><a href="funds.html" class="current">Holdings</a></li>
         <li><a href="#">About</a></li>
         <li><a href="#">Contact</a></li>
+        <li id="nav-auth"></li>
       </ul>
     </nav>
   </div>
@@ -356,7 +360,21 @@ document.getElementById('f-tf-tabs').addEventListener('click', e => {
   if (t && t.dataset.tf) setTimeframe(t.dataset.tf);
 });
 
-function renderFundDetail() {
+function fundAuthGateHTML(fundId) {
+  const next = encodeURIComponent('fund.html?id=' + (fundId || ''));
+  return `
+    <div class="auth-gate">
+      <div class="lock">⛁</div>
+      <div class="gate-title">Sign in to view holdings</div>
+      <p>Position lists for institutional funds are visible to authenticated users only. The backtest chart and headline returns are public.</p>
+      <div class="gate-actions">
+        <a href="login.html?next=${next}" class="btn primary">Sign in</a>
+        <a href="signup.html" class="btn">Create account</a>
+      </div>
+    </div>`;
+}
+
+async function renderFundDetail() {
   const id = getFundId();
   if (!id || typeof FUNDS === 'undefined' || !FUNDS[id]) {
     document.getElementById('f-name').textContent = 'Fund not found';
@@ -389,8 +407,15 @@ function renderFundDetail() {
   `).join('');
   document.getElementById('f-stats').innerHTML = pillHtml;
 
-  // Holdings table
+  // Holdings table — gated behind auth
   document.getElementById('f-holding-count').textContent = (f.rows || []).length + ' positions';
+
+  const session = await window.GBSAuth.getSession();
+  if (!session) {
+    document.getElementById('f-table').innerHTML = fundAuthGateHTML(f.id);
+    // Skip remaining holdings rendering (Pick a default chart timeframe still happens below)
+  } else {
+
   const stockInfo = (typeof STOCK_INFO !== 'undefined') ? STOCK_INFO : {};
   const rowsHtml = (f.rows || []).map((row, i) => {
     const info = stockInfo[row.ticker] || {};
@@ -419,6 +444,7 @@ function renderFundDetail() {
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>`;
+  } // end auth-gated holdings block
 
   // Pick a default timeframe with data — prefer 1Y, fallback ALL
   const series = f.series || [];
@@ -428,6 +454,7 @@ function renderFundDetail() {
 }
 
 renderFundDetail();
+window.sb.auth.onAuthStateChange(() => renderFundDetail());
 </script>
 </body>
 </html>

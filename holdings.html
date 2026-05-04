@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -37,6 +40,7 @@
         <li><a href="funds.html">Holdings</a></li>
         <li><a href="#">About</a></li>
         <li><a href="#">Contact</a></li>
+        <li id="nav-auth"></li>
       </ul>
     </nav>
   </div>
@@ -256,7 +260,21 @@ function pillClass(type) {
   return 'pill pill-' + type.toLowerCase();
 }
 
-function render() {
+function authGateHTML(symbol) {
+  const next = encodeURIComponent('holdings.html?etf=' + (symbol || ''));
+  return `
+    <div class="auth-gate">
+      <div class="lock">⛁</div>
+      <div class="gate-title">Sign in to view holdings</div>
+      <p>Per-ETF position lists are visible to authenticated users only. Free to create an account.</p>
+      <div class="gate-actions">
+        <a href="login.html?next=${next}" class="btn primary">Sign in</a>
+        <a href="signup.html" class="btn">Create account</a>
+      </div>
+    </div>`;
+}
+
+async function render() {
   const { symbol, meta } = getEtf();
 
   if (!symbol || !meta) {
@@ -278,6 +296,14 @@ function render() {
   document.getElementById('h-underlying').textContent = meta.underlying;
   document.getElementById('h-lev').textContent = meta.leverage;
   document.getElementById('h-sponsor').textContent = meta.sponsor;
+
+  // Gate: actual holdings list requires sign-in
+  const session = await window.GBSAuth.getSession();
+  if (!session) {
+    document.getElementById('h-asof').textContent = '—';
+    document.getElementById('holdings-content').innerHTML = authGateHTML(symbol);
+    return;
+  }
 
   const data = HOLDINGS[symbol];
   if (!data || !data.rows || !data.rows.length) {
@@ -340,6 +366,8 @@ function render() {
 }
 
 render();
+// Re-render when auth state changes (e.g. user signs in from another tab)
+window.sb.auth.onAuthStateChange(() => render());
 </script>
 
 </body>
