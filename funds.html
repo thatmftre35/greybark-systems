@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Holdings // GreyBark Systems</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== TOP STATUS BAR ===== -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://STRATEGIES/HOLDINGS &nbsp; <span class="blink">█</span> &nbsp; CATALOG_OK</div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html" class="current">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== PAGE HERO ===== -->
+<div class="page-hero">
+  <div class="hero-tag">Strategy Stack 02 // Institutional Holdings</div>
+  <h1>Institutional <span class="hl">holdings</span></h1>
+  <p class="lead">
+    Per-fund portfolio holdings parsed from 13F-style filings, with
+    <strong>buy-and-hold backtest returns</strong> computed on each fund's
+    current weights using daily price history. Click any fund for the full
+    breakdown, multi-timeframe chart, and position list.
+  </p>
+</div>
+
+<!-- ===== INDEX STRIP (categories) ===== -->
+<div class="index-strip">
+  <a href="#top20" id="cat-top20">
+    <span class="ix-id">// 01</span>
+    <span class="ix-name">Top 20 Performing Funds (over $100M AUM)</span>
+    <span class="ix-count" id="ix-top20">— funds</span>
+  </a>
+</div>
+
+<!-- ===== TOP 20 SECTION ===== -->
+<div class="cat-block" id="top20">
+  <div class="cat-head">
+    <div class="cat-num">// 01</div>
+    <h2>Top 20 Performing Funds (over $100M AUM)</h2>
+    <div class="cat-meta">backtest_engine</div>
+  </div>
+</div>
+<p class="cat-desc">
+  Institutional funds ranked by <strong>trailing 1-year backtest return</strong>, computed
+  by holding each fund's current positions at their reported weights and
+  applying real daily price history. Funds without enough price history
+  fall back to ALL-period return.
+</p>
+<div id="fund-grid" class="fund-grid"></div>
+
+<!-- ===== CTA ===== -->
+<div class="cta">
+  <div class="cta-box">
+    <h3>Trade the institutional flow.</h3>
+    <p>Custom fund universes, weekly rebalancing simulations, and signal feeds available for qualified institutions.</p>
+    <div class="cta-row" style="justify-content:center;">
+      <a href="mailto:research@greybarksystems.com" class="btn primary">research@greybarksystems.com</a>
+      <a href="#" class="btn">Schedule a call</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script src="funds-data.js"></script>
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  const el = document.getElementById('clock'); if (el) el.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '—';
+  const sign = n >= 0 ? '+' : '';
+  return sign + n.toFixed(2) + '%';
+}
+function dirClass(n) {
+  if (n == null || isNaN(n)) return 'na';
+  return n >= 0 ? 'up' : 'down';
+}
+function fmtMoney(n) {
+  if (n == null) return '—';
+  if (Math.abs(n) >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+}
+
+function renderTop20() {
+  const cat = (typeof FUND_CATEGORIES !== 'undefined') ? FUND_CATEGORIES.top20 : null;
+  const grid = document.getElementById('fund-grid');
+  if (!cat || typeof FUNDS === 'undefined') {
+    grid.innerHTML = '<div class="holdings-empty"><div class="big">No fund data loaded</div><div>Run parse_funds.py and reload.</div></div>';
+    return;
+  }
+  // Build list, sort by 1Y return desc (fallback to ALL)
+  const list = cat.fundIds
+    .map(id => FUNDS[id])
+    .filter(Boolean)
+    .map(f => ({
+      f,
+      yr: (f.returns && f.returns['1Y'] != null) ? f.returns['1Y']
+         : (f.returns && f.returns['ALL'] != null) ? f.returns['ALL']
+         : null,
+    }))
+    .sort((a, b) => (b.yr ?? -Infinity) - (a.yr ?? -Infinity));
+
+  document.getElementById('ix-top20').textContent = list.length + ' funds';
+
+  grid.innerHTML = list.map((item, i) => {
+    const f = item.f;
+    const r = f.returns || {};
+    const totalUsd = (f.rows || []).reduce((acc, x) => acc + (x.usd || 0), 0);
+    const headlineLabel = (r['1Y'] != null) ? '1Y RETURN' : 'ALL RETURN';
+    const headline = (r['1Y'] != null) ? r['1Y'] : (r['ALL'] != null ? r['ALL'] : null);
+    return `
+      <a class="fund-card" href="fund.html?id=${encodeURIComponent(f.id)}">
+        <div>
+          <div class="fund-rank">// rank ${(i+1).toString().padStart(2,'0')}</div>
+          <h3>${escapeHtml(f.name)}</h3>
+          <div class="fund-meta">
+            <span><strong>${(f.rows||[]).length}</strong> holdings</span>
+            <span>AUM <strong>${fmtMoney(totalUsd)}</strong></span>
+          </div>
+          <div class="return-strip">
+            <span class="r"><span class="lbl">1D</span><span class="val ${dirClass(r['1D'])}">${fmtPct(r['1D'])}</span></span>
+            <span class="r"><span class="lbl">1W</span><span class="val ${dirClass(r['1W'])}">${fmtPct(r['1W'])}</span></span>
+            <span class="r"><span class="lbl">1M</span><span class="val ${dirClass(r['1M'])}">${fmtPct(r['1M'])}</span></span>
+            <span class="r"><span class="lbl">YTD</span><span class="val ${dirClass(r['YTD'])}">${fmtPct(r['YTD'])}</span></span>
+            <span class="r"><span class="lbl">3Y</span><span class="val ${dirClass(r['3Y'])}">${fmtPct(r['3Y'])}</span></span>
+          </div>
+        </div>
+        <div class="fund-return">
+          <span class="label">${headlineLabel}</span>
+          <span class="pct ${dirClass(headline)}">${fmtPct(headline)}</span>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+renderTop20();
+</script>
+</body>
+</html>

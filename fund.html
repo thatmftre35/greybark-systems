@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fund Detail // GreyBark Systems</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== TOP STATUS BAR ===== -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://STRATEGIES/HOLDINGS/FUND &nbsp; <span class="blink">█</span> &nbsp; READ_OK</div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html" class="current">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== FUND HERO ===== -->
+<div class="fund-detail-hero">
+  <a class="back" href="funds.html">&lt; back to holdings</a>
+  <div class="hero-tag" id="f-tag">— // FUND DETAIL</div>
+  <h1 id="f-name">—</h1>
+  <div class="sub" id="f-sub">—</div>
+</div>
+
+<!-- ===== FUND STATS ===== -->
+<div class="fund-stats-strip" id="f-stats"></div>
+
+<!-- ===== BACKTEST CHART ===== -->
+<div class="fund-chart-block">
+  <div class="section-head">
+    <div class="section-num">// 01</div>
+    <h2>Backtest performance</h2>
+    <div class="section-meta">buy_and_hold · current_weights</div>
+  </div>
+
+  <div class="modal-price-row" style="margin-bottom: 12px;">
+    <div class="modal-price" id="f-price">—</div>
+    <div class="modal-change" id="f-change">—</div>
+    <div class="modal-period" id="f-period">SELECTED RANGE</div>
+  </div>
+
+  <div class="tf-tabs" id="f-tf-tabs">
+    <button class="tf-tab" data-tf="1D">1D</button>
+    <button class="tf-tab" data-tf="1W">1W</button>
+    <button class="tf-tab" data-tf="1M">1M</button>
+    <button class="tf-tab" data-tf="3M">3M</button>
+    <button class="tf-tab active" data-tf="YTD">YTD</button>
+    <button class="tf-tab" data-tf="1Y">1Y</button>
+    <button class="tf-tab" data-tf="3Y">3Y</button>
+    <button class="tf-tab" data-tf="ALL">ALL</button>
+  </div>
+
+  <div class="chart-wrap" id="chart-wrap">
+    <svg id="chart" class="chart-svg" viewBox="0 0 600 300" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"  stop-color="#6b9bc4" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#6b9bc4" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g id="chart-grid"></g>
+      <path id="chart-area" class="chart-area" d=""></path>
+      <polyline id="chart-line" class="chart-line" points=""></polyline>
+      <line id="chart-cross" class="chart-cross" x1="0" y1="0" x2="0" y2="300" style="display:none"></line>
+      <circle id="chart-dot" class="chart-dot" cx="0" cy="0" r="4" style="display:none"></circle>
+    </svg>
+    <div id="chart-tooltip" class="chart-tooltip" style="display:none">
+      <div class="tt-date">—</div>
+      <div class="tt-price">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOLDINGS TABLE ===== -->
+<div class="holdings-table-wrap">
+  <div class="section-head">
+    <div class="section-num">// 02</div>
+    <h2>Holdings</h2>
+    <div class="section-meta" id="f-holding-count">—</div>
+  </div>
+  <div id="f-table"></div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script src="funds-data.js"></script>
+<script src="stock-info.js"></script>
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  const el = document.getElementById('clock'); if (el) el.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '—';
+  const sign = n >= 0 ? '+' : '';
+  return sign + n.toFixed(2) + '%';
+}
+function dirClass(n) {
+  if (n == null || isNaN(n)) return '';
+  return n >= 0 ? 'up' : 'down';
+}
+function fmtMoney(n) {
+  if (n == null) return '—';
+  const a = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (a >= 1e9) return sign + '$' + (a/1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return sign + '$' + (a/1e6).toFixed(1) + 'M';
+  if (a >= 1e3) return sign + '$' + (a/1e3).toFixed(0) + 'K';
+  return sign + '$' + a.toFixed(0);
+}
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return '—';
+  const a = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (a >= 1e9) return sign + (a/1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return sign + (a/1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return sign + (a/1e3).toFixed(1) + 'K';
+  return sign + Math.round(a).toString();
+}
+function fmtChartDate(s) {
+  if (!s) return '—';
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const [y, m, d] = s.split('-').map(Number);
+  return `${months[m-1]} ${d}, ${y}`;
+}
+
+function getFundId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
+}
+
+const TIMEFRAMES = {
+  '1D':  { label:'INTRADAY (1D)', days: 2 },
+  '1W':  { label:'1 WEEK',        days: 5 },
+  '1M':  { label:'1 MONTH',       days: 22 },
+  '3M':  { label:'3 MONTHS',      days: 65 },
+  'YTD': { label:'YEAR TO DATE',  days: null },
+  '1Y':  { label:'1 YEAR',        days: 252 },
+  '3Y':  { label:'3 YEARS',       days: 756 },
+  'ALL': { label:'ALL HISTORY',   days: Infinity },
+};
+
+const CHART_W = 600, CHART_H = 300;
+const CHART_PAD = { L: 8, R: 36, T: 18, B: 22 };
+let CURRENT_FUND = null;
+let CURRENT_TF   = 'YTD';
+let CURRENT_SERIES = [];
+let CURRENT_POINTS = [];
+
+function getSeries(fund, tf) {
+  const series = fund.series || [];
+  if (!series.length) return [];
+  const cfg = TIMEFRAMES[tf];
+  if (tf === 'ALL') return series;
+  if (tf === 'YTD') {
+    const lastYear = series[series.length - 1][0].split('-')[0];
+    return series.filter(s => s[0].startsWith(lastYear + '-'));
+  }
+  if (cfg.days != null && Number.isFinite(cfg.days)) {
+    return series.slice(Math.max(0, series.length - (cfg.days + 1)));
+  }
+  return series;
+}
+
+function drawChart(series) {
+  CURRENT_SERIES = series || [];
+  CURRENT_POINTS = [];
+
+  const lineEl = document.getElementById('chart-line');
+  const areaEl = document.getElementById('chart-area');
+  const grid   = document.getElementById('chart-grid');
+
+  if (!series || series.length < 2) {
+    lineEl.setAttribute('points', '');
+    areaEl.setAttribute('d', '');
+    grid.innerHTML = `<text class="chart-axis" x="${CHART_W/2}" y="${CHART_H/2}" text-anchor="middle">NO DATA</text>`;
+    return;
+  }
+
+  const innerW = CHART_W - CHART_PAD.L - CHART_PAD.R;
+  const innerH = CHART_H - CHART_PAD.T - CHART_PAD.B;
+
+  let min = Infinity, max = -Infinity;
+  for (const [, v] of series) { if (v < min) min = v; if (v > max) max = v; }
+  if (min === max) { min -= 1; max += 1; }
+  const range = max - min;
+
+  CURRENT_POINTS = series.map(([_, v], i) => {
+    const x = CHART_PAD.L + (i / (series.length - 1)) * innerW;
+    const y = CHART_PAD.T + (1 - (v - min) / range) * innerH;
+    return [x, y];
+  });
+
+  const polyline = CURRENT_POINTS.map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ');
+  const areaPath = 'M ' + CURRENT_POINTS[0][0].toFixed(2) + ' ' + (CHART_PAD.T + innerH).toFixed(2) +
+    ' L ' + CURRENT_POINTS.map(([x,y]) => x.toFixed(2) + ' ' + y.toFixed(2)).join(' L ') +
+    ' L ' + CURRENT_POINTS[CURRENT_POINTS.length-1][0].toFixed(2) + ' ' + (CHART_PAD.T + innerH).toFixed(2) + ' Z';
+
+  lineEl.setAttribute('points', polyline);
+  areaEl.setAttribute('d', areaPath);
+
+  grid.innerHTML = '';
+  const ROWS = 4;
+  for (let i = 0; i <= ROWS; i++) {
+    const y = CHART_PAD.T + (i / ROWS) * innerH;
+    const v = max - (i / ROWS) * range;
+    grid.insertAdjacentHTML('beforeend',
+      `<line class="chart-grid-line" x1="${CHART_PAD.L}" x2="${CHART_W-CHART_PAD.R}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}"></line>` +
+      `<text class="chart-axis" x="${CHART_W-CHART_PAD.R+4}" y="${(y-2).toFixed(2)}" text-anchor="start">${v.toFixed(1)}</text>`
+    );
+  }
+  hideHover();
+}
+
+const chartSvg     = document.getElementById('chart');
+const chartWrap    = document.getElementById('chart-wrap');
+const chartCross   = document.getElementById('chart-cross');
+const chartDot     = document.getElementById('chart-dot');
+const chartTooltip = document.getElementById('chart-tooltip');
+
+function hideHover() {
+  chartCross.style.display = 'none';
+  chartDot.style.display = 'none';
+  chartTooltip.style.display = 'none';
+}
+
+function showHoverAt(idx) {
+  if (!CURRENT_POINTS.length) return;
+  if (idx < 0) idx = 0;
+  if (idx >= CURRENT_POINTS.length) idx = CURRENT_POINTS.length - 1;
+  const [vx, vy] = CURRENT_POINTS[idx];
+  const [date, value] = CURRENT_SERIES[idx];
+
+  chartCross.setAttribute('x1', vx);
+  chartCross.setAttribute('x2', vx);
+  chartCross.setAttribute('y1', CHART_PAD.T);
+  chartCross.setAttribute('y2', CHART_H - CHART_PAD.B);
+  chartCross.style.display = '';
+  chartDot.setAttribute('cx', vx);
+  chartDot.setAttribute('cy', vy);
+  chartDot.style.display = '';
+
+  const rect = chartWrap.getBoundingClientRect();
+  const sx = (vx / CHART_W) * rect.width;
+  const sy = (vy / CHART_H) * rect.height;
+  chartTooltip.querySelector('.tt-date').textContent  = fmtChartDate(date);
+  // Pct change from start of currently visible series
+  const startVal = CURRENT_SERIES[0][1];
+  const pct = ((value - startVal) / startVal) * 100;
+  chartTooltip.querySelector('.tt-price').textContent =
+    value.toFixed(2) + '  (' + (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%)';
+  chartTooltip.style.display = '';
+  const ttRect = chartTooltip.getBoundingClientRect();
+  let leftPx = sx;
+  if (sx < ttRect.width / 2 + 6) leftPx = ttRect.width / 2 + 6;
+  if (sx > rect.width - ttRect.width / 2 - 6) leftPx = rect.width - ttRect.width / 2 - 6;
+  chartTooltip.style.left = leftPx + 'px';
+  chartTooltip.style.top  = Math.max(0, sy - 12) + 'px';
+}
+
+function onChartMove(e) {
+  if (!CURRENT_POINTS.length) return;
+  const rect = chartSvg.getBoundingClientRect();
+  const xRatio = (e.clientX - rect.left) / rect.width;
+  const xView  = xRatio * CHART_W;
+  let nearest = 0, minDist = Infinity;
+  for (let i = 0; i < CURRENT_POINTS.length; i++) {
+    const d = Math.abs(CURRENT_POINTS[i][0] - xView);
+    if (d < minDist) { minDist = d; nearest = i; }
+  }
+  showHoverAt(nearest);
+}
+chartSvg.addEventListener('mousemove', onChartMove);
+chartSvg.addEventListener('mouseleave', hideHover);
+chartSvg.addEventListener('touchmove', (e) => {
+  if (e.touches.length) {
+    onChartMove({ clientX: e.touches[0].clientX });
+    e.preventDefault();
+  }
+}, { passive: false });
+chartSvg.addEventListener('touchend', hideHover);
+
+function setTimeframe(tf) {
+  CURRENT_TF = tf;
+  const tabs = document.querySelectorAll('#f-tf-tabs .tf-tab');
+  tabs.forEach(b => b.classList.toggle('active', b.dataset.tf === tf));
+  if (!CURRENT_FUND) return;
+
+  const series = getSeries(CURRENT_FUND, tf);
+  document.getElementById('f-period').textContent = TIMEFRAMES[tf].label;
+  if (!series.length) {
+    document.getElementById('f-price').textContent = '—';
+    const ch = document.getElementById('f-change');
+    ch.textContent = '—';
+    ch.className = 'modal-change';
+    drawChart([]);
+    return;
+  }
+  const start = series[0][1];
+  const end   = series[series.length - 1][1];
+  const pct   = ((end - start) / start) * 100;
+  document.getElementById('f-price').textContent = end.toFixed(2);
+  const ch = document.getElementById('f-change');
+  ch.textContent = fmtPct(pct);
+  ch.className = 'modal-change ' + dirClass(pct);
+  drawChart(series);
+}
+
+document.getElementById('f-tf-tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tf-tab');
+  if (t && t.dataset.tf) setTimeframe(t.dataset.tf);
+});
+
+function renderFundDetail() {
+  const id = getFundId();
+  if (!id || typeof FUNDS === 'undefined' || !FUNDS[id]) {
+    document.getElementById('f-name').textContent = 'Fund not found';
+    document.getElementById('f-sub').textContent = id ? `No data for "${id}"` : 'Append ?id=FUND_ID to the URL.';
+    return;
+  }
+  const f = FUNDS[id];
+  CURRENT_FUND = f;
+  document.title = f.name + ' // GreyBark Systems';
+  document.getElementById('f-tag').textContent = 'FUND DETAIL // ' + (f.id || '').toUpperCase();
+  document.getElementById('f-name').innerHTML = '<span class="hl">' + escapeHtml(f.name) + '</span>';
+
+  const totalUsd = (f.rows || []).reduce((acc, r) => acc + (r.usd || 0), 0);
+  document.getElementById('f-sub').textContent =
+    (f.rows || []).length + ' positions · estimated AUM ' + fmtMoney(totalUsd);
+
+  // Stats strip — pulled from precomputed returns
+  const r = f.returns || {};
+  const pillHtml = [
+    ['1D', r['1D']],
+    ['1M', r['1M']],
+    ['YTD', r['YTD']],
+    ['1Y', r['1Y']],
+    ['3Y', r['3Y']],
+  ].map(([k, v]) => `
+    <div>
+      <span class="k">${k} return</span>
+      <span class="v ${dirClass(v)}">${fmtPct(v)}</span>
+    </div>
+  `).join('');
+  document.getElementById('f-stats').innerHTML = pillHtml;
+
+  // Holdings table
+  document.getElementById('f-holding-count').textContent = (f.rows || []).length + ' positions';
+  const stockInfo = (typeof STOCK_INFO !== 'undefined') ? STOCK_INFO : {};
+  const rowsHtml = (f.rows || []).map((row, i) => {
+    const info = stockInfo[row.ticker] || {};
+    const name = info.name || '—';
+    return `
+      <tr>
+        <td class="rank">${(i+1).toString().padStart(2,'0')}</td>
+        <td class="ticker">${escapeHtml(row.ticker)}</td>
+        <td class="name">${escapeHtml(name)}</td>
+        <td class="num">${fmtNum(row.shares)}</td>
+        <td class="num">${fmtMoney(row.usd)}</td>
+        <td class="weight">${(row.weight ?? 0).toFixed(2)}%</td>
+      </tr>`;
+  }).join('');
+  document.getElementById('f-table').innerHTML = `
+    <table class="holdings-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Ticker</th>
+          <th>Name</th>
+          <th style="text-align:right;">Shares</th>
+          <th style="text-align:right;">Value</th>
+          <th style="text-align:right;">Weight</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+
+  // Pick a default timeframe with data — prefer 1Y, fallback ALL
+  const series = f.series || [];
+  let initial = 'YTD';
+  if (!series.length) initial = 'ALL';
+  setTimeframe(initial);
+}
+
+renderFundDetail();
+</script>
+</body>
+</html>

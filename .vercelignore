@@ -1,0 +1,26 @@
+# Dev tooling — these run locally to refresh data, not on Vercel
+parse_funds.py
+parse_holdings.py
+fetch_prices.py
+fetch_stock_info.py
+generate_logo.py
+
+# Source CSVs / xlsx — already baked into the *-data.js files
+csvs/
+*.xlsx
+
+# Python cruft
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Editor
+.claude/
+.vscode/
+.idea/
+
+# Env
+.env
+.env.local

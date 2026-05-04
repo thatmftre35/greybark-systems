@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GreyBark Systems // Quant Research</title>
+<link rel="icon" type="image/png" href="greybark-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== TOP STATUS BAR ===== -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>GBS://SYSTEMS.OPS &nbsp; <span class="blink">█</span> &nbsp; SYS_OK</div>
+    <div>SESSION 0xC4F2 &nbsp;|&nbsp; <span id="clock">--:--:-- UTC</span></div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <img src="greybark-logo.png" alt="GreyBark Systems logo" />
+      <div class="brand-text">
+        <div class="brand-name">GreyBark</div>
+        <div class="brand-sub">Systems // Quant Research</div>
+      </div>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="current">Home</a></li>
+        <li><a href="leveraged-etfs.html">Leveraged ETFs</a></li>
+        <li><a href="funds.html">Holdings</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-tag">Leveraged ETFs // Institutional Holdings // Alt Data</div>
+      <h1>
+        Strategies built for<br />
+        <span class="hl">high</span> <span class="hl">upside.</span><br />
+        From data the market overlooks<span class="caret"></span>
+      </h1>
+      <p class="hero-lead">
+        GreyBark Systems builds <strong>quantitative strategies optimized for upside</strong>
+        &mdash; not exposure for its own sake. We track <strong>leveraged ETF flows</strong>,
+        <strong>institutional holdings</strong>, <strong>insider trade reports</strong>, and
+        <strong>federal contract awards</strong>, then translate each into executable
+        strategies with sizing and risk built in.
+      </p>
+      <div class="cta-row">
+        <a href="#contact" class="btn primary">Request Sample</a>
+        <a href="#method" class="btn">Read the Method</a>
+      </div>
+    </div>
+
+    <!-- Terminal panel -->
+    <div class="terminal" aria-hidden="true">
+      <div class="term-bar">
+        <span>GBS_TERMINAL v3.11</span>
+        <div class="term-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="term-body">
+        <div class="term-line"><span class="prompt">gbs&gt;</span> init --module=strategy_engine</div>
+        <div class="term-line"><span class="dim">[boot]</span> leveraged etf engine ... <span class="ok">[ ok ]</span></div>
+        <div class="term-line"><span class="dim">[boot]</span> ingest 13F holdings .... <span class="ok">[ ok ]</span></div>
+        <div class="term-line"><span class="dim">[boot]</span> ingest form 4 insiders . <span class="ok">[ ok ]</span></div>
+        <div class="term-line"><span class="dim">[boot]</span> ingest fed contracts ... <span class="ok">[ ok ]</span></div>
+        <div class="term-line"><span class="dim">[boot]</span> backtest engine ........ <span class="ok">[ ok ]</span></div>
+        <div class="term-line">&nbsp;</div>
+        <div class="term-line"><span class="prompt">gbs&gt;</span> status</div>
+        <div class="term-line">  <span class="key">leveraged_etfs</span>    = <span class="val">127 tracked</span></div>
+        <div class="term-line">  <span class="key">strategy_pairs</span>    = <span class="val">53 active</span></div>
+        <div class="term-line">  <span class="key">funds_covered</span>     = <span class="val">20 institutional</span></div>
+        <div class="term-line">  <span class="key">positions_mapped</span>  = <span class="val">411 holdings</span></div>
+        <div class="term-line">  <span class="key">stock_universe</span>    = <span class="val">348 tickers</span></div>
+        <div class="term-line">&nbsp;</div>
+<pre class="ascii">         _##_
+       _######_
+      _########_
+     _##########_
+       _######_
+          ||
+          ||
+        __||__
+   ___SIGNAL___EXECUTION___</pre>
+        <div class="term-line">&nbsp;</div>
+        <div class="term-line"><span class="prompt">gbs&gt;</span> _<span class="caret" style="display:inline-block;width:8px;height:1em;background:var(--blue);vertical-align:-0.15em;animation:blink 1s steps(2) infinite;"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TICKER ===== -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>LEVERAGED ETFs: <span class="up">127 TRACKED</span></span><span class="sep">//</span>
+    <span>PAIR STRATEGIES: <span class="up">53 ACTIVE</span></span><span class="sep">//</span>
+    <span>SINGLE-STOCK PAIRS: <span class="up">17 ACTIVE</span></span><span class="sep">//</span>
+    <span>INSTITUTIONAL FUNDS: <span class="up">20 COVERED</span></span><span class="sep">//</span>
+    <span>FUND POSITIONS: <span class="up">411 MAPPED</span></span><span class="sep">//</span>
+    <span>STOCK UNIVERSE: <span class="up">348 TICKERS</span></span><span class="sep">//</span>
+    <span>FORM 4 INSIDER: <span class="up">LIVE TRACKING</span></span><span class="sep">//</span>
+    <span>FED CONTRACTS: <span class="up">LIVE TRACKING</span></span><span class="sep">//</span>
+    <!-- duplicate for seamless loop -->
+    <span>LEVERAGED ETFs: <span class="up">127 TRACKED</span></span><span class="sep">//</span>
+    <span>PAIR STRATEGIES: <span class="up">53 ACTIVE</span></span><span class="sep">//</span>
+    <span>SINGLE-STOCK PAIRS: <span class="up">17 ACTIVE</span></span><span class="sep">//</span>
+    <span>INSTITUTIONAL FUNDS: <span class="up">20 COVERED</span></span><span class="sep">//</span>
+    <span>FUND POSITIONS: <span class="up">411 MAPPED</span></span><span class="sep">//</span>
+    <span>STOCK UNIVERSE: <span class="up">348 TICKERS</span></span><span class="sep">//</span>
+    <span>FORM 4 INSIDER: <span class="up">LIVE TRACKING</span></span><span class="sep">//</span>
+    <span>FED CONTRACTS: <span class="up">LIVE TRACKING</span></span><span class="sep">//</span>
+  </div>
+</div>
+
+<!-- ===== WHAT WE DO ===== -->
+<section id="what">
+  <div class="section-head">
+    <div class="section-num">// 01</div>
+    <h2>What we do</h2>
+    <div class="section-meta">core_function</div>
+  </div>
+  <div class="pillars">
+    <div class="pillar">
+      <div class="pillar-id">&gt; Module 01</div>
+      <h3>Source the data</h3>
+      <p>Primary filings ingested at the source &mdash; leveraged ETF flows and holdings, 13F institutional positions, and Form 4 insider transactions. Parsed, normalized, and ticker-mapped within hours of release.</p>
+    </div>
+    <div class="pillar">
+      <div class="pillar-id">&gt; Module 02</div>
+      <h3>Build the signal</h3>
+      <p>Each dataset becomes a directional signal: pair rotation logic for leveraged ETFs, position deltas and cluster moves on 13F, conviction scoring on insider trades. Calibrated against historical outcomes, point-in-time.</p>
+    </div>
+    <div class="pillar">
+      <div class="pillar-id">&gt; Module 03</div>
+      <h3>Translate to leverage</h3>
+      <p>Signals get sized for the leveraged ETF tape &mdash; vol-aware exposure, regime detection, decay-managed hold periods. Strategy output is execution-ready, not academic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS STRIP ===== -->
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="num">127</div>
+      <div class="lbl">Leveraged ETFs Tracked</div>
+    </div>
+    <div class="stat">
+      <div class="num">53</div>
+      <div class="lbl">Pair Strategies</div>
+    </div>
+    <div class="stat">
+      <div class="num">20</div>
+      <div class="lbl">Institutional Funds</div>
+    </div>
+    <div class="stat">
+      <div class="num">411</div>
+      <div class="lbl">Fund Positions Mapped</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOCUS AREAS ===== -->
+<section id="focus">
+  <div class="section-head">
+    <div class="section-num">// 02</div>
+    <h2>Strategy stacks</h2>
+    <div class="section-meta">scope = four signal families</div>
+  </div>
+  <div class="sectors">
+    <div class="sector">
+      <div class="glyph">▲▼</div>
+      <h4>Leveraged ETF Strategies</h4>
+      <p>127 leveraged ETFs tracked across pair-rotation, single-direction, and single-stock leveraged formats. Vol-targeted, regime-aware, and decay-managed by construction.</p>
+      <div class="tag">01 / 04</div>
+    </div>
+    <div class="sector">
+      <div class="glyph">⊞</div>
+      <h4>Institutional Holdings</h4>
+      <p>13F filings parsed at the position level for top-performing institutional funds. Buy-and-hold backtests on each fund's current weights, computed daily.</p>
+      <div class="tag">02 / 04</div>
+    </div>
+    <div class="sector">
+      <div class="glyph">◈</div>
+      <h4>Insider Trade Reports</h4>
+      <p>Form 4 transactions tracked live. Cluster buying, unusual size, and executive-vs-director conviction scoring become directional signals.</p>
+      <div class="tag">03 / 04</div>
+    </div>
+    <div class="sector">
+      <div class="glyph">⎔</div>
+      <h4>Government Contracts</h4>
+      <p>Federal awards (DoD, GSA, civilian) matched to public companies. Revenue translation modeled to surface contract winners ahead of guidance.</p>
+      <div class="tag">04 / 04</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== METHOD ===== -->
+<section id="method">
+  <div class="section-head">
+    <div class="section-num">// 03</div>
+    <h2>How GreyBark builds a trade</h2>
+    <div class="section-meta">methodology</div>
+  </div>
+  <div class="method-grid">
+    <div class="method-copy">
+      <p>Most "alt data" stops at the dataset. We ship the strategy.</p>
+      <p>
+        GreyBark is a <strong>strategy engine</strong>: primary filings on one side,
+        a sized, executable trade on the other. We combine
+        <strong>leveraged ETF flows and holdings</strong>, <strong>13F institutional
+        positions</strong>, <strong>Form 4 insider transactions</strong>, and
+        <strong>federal contract awards</strong> into a single execution layer that's
+        vol-aware, regime-aware, and decay-managed by construction.
+      </p>
+      <ul class="method-list">
+        <li>Primary-source ingestion &mdash; SEC EDGAR, USAspending, fund prospectuses, ETF holdings feeds.</li>
+        <li>Ticker-mapped panels with point-in-time integrity, no look-ahead.</li>
+        <li>Signal layer: pair-rotation logic, position deltas, insider conviction scoring, contract revenue translation.</li>
+        <li>Leveraged ETF execution: vol-targeted, decay-managed, regime-aware.</li>
+        <li>Strategies backtested against the live tape and updated weekly.</li>
+      </ul>
+    </div>
+    <div class="schematic" aria-label="GreyBark strategy vs underlying schematic">
+      <div class="schematic-head">
+        <span>GBS STRATEGY vs UNDERLYING ETF &mdash; 12-MO</span>
+        <span class="live">LIVE</span>
+      </div>
+      <div class="bars">
+        <div class="bar consensus" style="height: 38%"></div>
+        <div class="bar"           style="height: 56%"></div>
+        <div class="bar consensus" style="height: 44%"></div>
+        <div class="bar"           style="height: 70%"></div>
+        <div class="bar consensus" style="height: 50%"></div>
+        <div class="bar"           style="height: 65%"></div>
+        <div class="bar consensus" style="height: 33%"></div>
+        <div class="bar"           style="height: 60%"></div>
+        <div class="bar consensus" style="height: 47%"></div>
+        <div class="bar"           style="height: 80%"></div>
+        <div class="bar consensus" style="height: 41%"></div>
+        <div class="bar"           style="height: 68%"></div>
+      </div>
+      <div class="schematic-axis">
+        <span>M1</span><span>M3</span><span>M5</span><span>M7</span><span>M9</span><span>M11</span>
+      </div>
+      <div class="schematic-legend">
+        <div><span class="swatch qb"></span>GreyBark Strategy</div>
+        <div><span class="swatch cn"></span>Underlying ETF</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<div class="cta" id="contact">
+  <div class="cta-box">
+    <h3>Run the strategies.</h3>
+    <p>Sample backtests, methodology decks, and pilot access available for qualified institutions.</p>
+    <div class="cta-row" style="justify-content:center;">
+      <a href="mailto:research@greybarksystems.com" class="btn primary">research@greybarksystems.com</a>
+      <a href="#" class="btn">Schedule a call</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 GREYBARK SYSTEMS, LLC &nbsp; // &nbsp; QUANT RESEARCH</div>
+    <div>
+      <a href="#">LINKEDIN</a> &nbsp;·&nbsp;
+      <a href="#">DISCLOSURES</a> &nbsp;·&nbsp;
+      <a href="#">PRIVACY</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function pad(n){ return n.toString().padStart(2,'0'); }
+  function tick(){
+    const d = new Date();
+    const t = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+    const el = document.getElementById('clock');
+    if (el) el.textContent = t;
+  }
+  tick(); setInterval(tick, 1000);
+</script>
+
+</body>
+</html>
