@@ -127,22 +127,48 @@ function nextUrl() {
   return 'index.html';
 }
 
+function isInsecureOrigin() {
+  return !window.location.origin || window.location.origin === 'null' || window.location.origin.startsWith('file:');
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   hideMsg();
+  console.log('[login] form submit');
   const btn = document.getElementById('login-btn');
   btn.disabled = true;
-  const form = e.currentTarget;
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    showMsg(error.message || 'Sign-in failed.', 'error');
+  try {
+    if (typeof window.sb === 'undefined') {
+      throw new Error('Supabase client not loaded. Check the browser console.');
+    }
+    if (isInsecureOrigin()) {
+      throw new Error('Open this page over http(s), not file://. Run `python3 -m http.server 8000` and visit http://localhost:8000/login.html.');
+    }
+    const form = e.currentTarget;
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.warn('[login] error', error);
+      showMsg(error.message || 'Sign-in failed.', 'error');
+      btn.disabled = false;
+      return;
+    }
+    showMsg('Signed in. Redirecting…', 'ok');
+    window.location.href = nextUrl();
+  } catch (err) {
+    console.error('[login] caught', err);
+    showMsg(err.message || 'Unexpected error.', 'error');
     btn.disabled = false;
-    return;
   }
-  showMsg('Signed in. Redirecting…', 'ok');
-  window.location.href = nextUrl();
+});
+
+window.addEventListener('load', () => {
+  if (typeof window.sb === 'undefined') {
+    showMsg('Supabase client failed to initialize. Check the browser console.', 'error');
+  } else if (isInsecureOrigin()) {
+    showMsg('Open this page over http(s) (e.g. python3 -m http.server). file:// origins are blocked.', 'error');
+  }
 });
 
 document.getElementById('forgot-link').addEventListener('click', async (e) => {

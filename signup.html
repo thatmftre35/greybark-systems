@@ -109,28 +109,59 @@ function showMsg(text, kind) {
   el.hidden = false;
 }
 
+function isInsecureOrigin() {
+  // Supabase Auth doesn't work from file:// — require http(s)
+  return !window.location.origin || window.location.origin === 'null' || window.location.origin.startsWith('file:');
+}
+
 document.getElementById('signup-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  console.log('[signup] form submit');
   const btn = document.getElementById('signup-btn');
   btn.disabled = true;
-  const form = e.currentTarget;
-  const email = form.email.value.trim();
-  const password = form.password.value;
-
-  const redirect = window.location.origin + '/email-verified';
-  const { data, error } = await window.sb.auth.signUp({
-    email, password,
-    options: { emailRedirectTo: redirect },
-  });
-  if (error) {
-    showMsg(error.message || 'Sign-up failed.', 'error');
+  try {
+    if (typeof window.sb === 'undefined') {
+      throw new Error('Supabase client not loaded. Check that config.js loaded correctly.');
+    }
+    if (isInsecureOrigin()) {
+      throw new Error('Open this page over http(s), not file://. Run `python3 -m http.server 8000` and visit http://localhost:8000/signup.html.');
+    }
+    const form = e.currentTarget;
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    if (!email || !password) {
+      throw new Error('Email and password are required.');
+    }
+    const redirect = window.location.origin + '/email-verified';
+    console.log('[signup] calling sb.auth.signUp with redirect', redirect);
+    const { data, error } = await window.sb.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: redirect },
+    });
+    if (error) {
+      console.warn('[signup] error', error);
+      showMsg(error.message || 'Sign-up failed.', 'error');
+      btn.disabled = false;
+      return;
+    }
+    console.log('[signup] success', data);
+    showMsg('Check your inbox to verify your email.', 'ok');
+    form.reset();
     btn.disabled = false;
-    return;
+  } catch (err) {
+    console.error('[signup] caught', err);
+    showMsg(err.message || 'Unexpected error.', 'error');
+    btn.disabled = false;
   }
-  // If "Confirm email" is enabled in Supabase, session is null until verification.
-  showMsg('Check your inbox to verify your email.', 'ok');
-  form.reset();
-  btn.disabled = false;
+});
+
+// Sanity-check on page load — surface any obvious wiring problems
+window.addEventListener('load', () => {
+  if (typeof window.sb === 'undefined') {
+    showMsg('Supabase client failed to initialize. Check the browser console.', 'error');
+  } else if (isInsecureOrigin()) {
+    showMsg('Open this page over http(s) (e.g. python3 -m http.server). file:// origins are blocked by Supabase Auth.', 'error');
+  }
 });
 </script>
 </body>
