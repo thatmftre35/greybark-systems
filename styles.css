@@ -505,49 +505,26 @@ h1 .caret {
 }
 
 /* ============ TRUSTED BY ============ */
-.trust-bar {
-  border-top: 1px solid var(--grey);
-  border-bottom: 1px solid var(--grey);
-  background: var(--bg-2);
-}
-.trust-grid {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px;
+.trust-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
-.trust-cell {
-  padding: 28px 16px;
-  border-right: 1px dashed var(--grey-2);
-  text-align: left;
+.trust-glyph-img {
+  height: 48px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 110px;
+  align-items: center;
 }
-.trust-cell:last-child { border-right: none; }
-.trust-logo {
-  height: 44px;
+.trust-glyph-img img {
+  height: 36px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
-  object-position: left center;
 }
-.trust-num {
-  font-family: 'VT323', monospace;
-  font-size: 44px;
-  color: var(--blue);
-  line-height: 1;
-  text-shadow: 0 0 10px rgba(107,155,196,0.3);
+@media (max-width: 700px) {
+  .trust-cards { grid-template-columns: 1fr; }
 }
-.trust-lbl {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-top: 8px;
-}
+
 .method-loc {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
@@ -2128,9 +2105,6 @@ footer {
   .sectors { grid-template-columns: 1fr; }
   .stats-inner { grid-template-columns: 1fr; }
   .stat { border-right: none; border-bottom: 1px dashed var(--grey-2); }
-  .trust-grid { grid-template-columns: 1fr; }
-  .trust-cell { border-right: none; border-bottom: 1px dashed var(--grey-2); }
-  .trust-cell:last-child { border-bottom: none; }
   .header-inner { flex-direction: column; align-items: flex-start; }
   .index-strip { grid-template-columns: 1fr; }
   .index-strip a { border-right: none; border-bottom: 1px dashed var(--grey-2); }
