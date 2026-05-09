@@ -509,57 +509,44 @@ h1 .caret {
   border-top: 1px solid var(--grey);
   border-bottom: 1px solid var(--grey);
   background: var(--bg-2);
-  padding: 30px 32px;
 }
-.trust-inner {
-  max-width: 1200px;
+.trust-grid {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.trust-cell {
+  padding: 28px 16px;
+  border-right: 1px dashed var(--grey-2);
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 22px;
-}
-.trust-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-}
-.trust-row {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 56px;
+  min-height: 110px;
 }
-.trust-row .trust-logo {
+.trust-cell:last-child { border-right: none; }
+.trust-logo {
   height: 44px;
   width: auto;
-  opacity: 0.85;
-  transition: opacity 0.2s;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
 }
-.trust-row .trust-logo:hover { opacity: 1; }
-.trust-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-}
-.trust-stat-num {
+.trust-num {
   font-family: 'VT323', monospace;
-  font-size: 36px;
+  font-size: 44px;
   color: var(--blue);
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 8px rgba(107,155,196,0.35);
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(107,155,196,0.3);
 }
-.trust-stat-sub {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  color: var(--text-dim);
+.trust-lbl {
+  font-size: 10px;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  margin-top: 6px;
+  color: var(--text-dim);
+  margin-top: 8px;
 }
 .method-loc {
   font-family: 'IBM Plex Mono', monospace;
@@ -2141,6 +2128,9 @@ footer {
   .sectors { grid-template-columns: 1fr; }
   .stats-inner { grid-template-columns: 1fr; }
   .stat { border-right: none; border-bottom: 1px dashed var(--grey-2); }
+  .trust-grid { grid-template-columns: 1fr; }
+  .trust-cell { border-right: none; border-bottom: 1px dashed var(--grey-2); }
+  .trust-cell:last-child { border-bottom: none; }
   .header-inner { flex-direction: column; align-items: flex-start; }
   .index-strip { grid-template-columns: 1fr; }
   .index-strip a { border-right: none; border-bottom: 1px dashed var(--grey-2); }
