@@ -1,7 +1,7 @@
 """
-QBridge Wilmington — pixel logo generator.
-Designs at low logical resolution, then scales up with nearest-neighbor
-to keep crisp pixel edges at the final size.
+Chapel Street Research — pixel logo generator.
+Renders a "CS" monogram with "RESEARCH" wordmark below, at low logical
+resolution then scales up with nearest-neighbor to keep crisp pixel edges.
 """
 
 from PIL import Image, ImageDraw
@@ -253,6 +253,34 @@ FONT9x12 = {
         "110000011",
         "110000011",
     ],
+    'C': [
+        "001111110",
+        "011111111",
+        "110000011",
+        "110000000",
+        "110000000",
+        "110000000",
+        "110000000",
+        "110000000",
+        "110000000",
+        "110000011",
+        "011111111",
+        "001111110",
+    ],
+    'H': [
+        "110000011",
+        "110000011",
+        "110000011",
+        "110000011",
+        "110000011",
+        "111111111",
+        "111111111",
+        "110000011",
+        "110000011",
+        "110000011",
+        "110000011",
+        "110000011",
+    ],
 }
 
 # -----------------------------------------------------------------------------
@@ -342,17 +370,17 @@ def build_logo(logical_size=128, scale=8):
         d.rectangle([cx, min(y0, y1), cx + (bw - 1), max(y0, y1)],
                     fill=BLUE)
 
-    # ---- big "GB" monogram (9x12 glyphs scaled up) ----
-    gb_scale = 5
-    gb = "GB"
-    gb_w = measure_9x12(gb, scale=gb_scale)   # 9*2 + 2 gap = 20 logical * 5 = 100
-    gb_h = 12 * gb_scale                       # 60
-    gx = (W - gb_w) // 2
-    gy = 18
-    text_9x12(d, gb, gx, gy, BLUE, scale=gb_scale)
+    # ---- big "CS" monogram (9x12 glyphs scaled up) ----
+    cs_scale = 5
+    cs = "CS"
+    cs_w = measure_9x12(cs, scale=cs_scale)
+    cs_h = 12 * cs_scale
+    cx_logo = (W - cs_w) // 2
+    cy_logo = 18
+    text_9x12(d, cs, cx_logo, cy_logo, BLUE, scale=cs_scale)
 
-    # ---- "SYSTEMS" wordmark below ----
-    word = "SYSTEMS"
+    # ---- "RESEARCH" wordmark below ----
+    word = "RESEARCH"
     word_w = measure_9x12(word)
     wx = (W - word_w) // 2
     wy = 94
@@ -453,5 +481,5 @@ def build_icon_only(logical_size=64, scale=16):
 
 if __name__ == "__main__":
     full = build_logo(logical_size=128, scale=8)   # 1024 x 1024
-    full.save("/Users/tre/Desktop/QBridge Site/greybark-logo.png")
+    full.save("/Users/tre/Desktop/QBridge Site/chapelstreet-logo.png")
     print(f"Saved logo: {full.size}")

@@ -1,6 +1,6 @@
-# GreyBark Systems
+# Chapel Street Research
 
-Static site for GreyBark Systems — quantitative strategies for leveraged ETFs,
+Static site for Chapel Street Research — quantitative strategies for leveraged ETFs,
 institutional holdings, insider trades, and federal contracts.
 
 ## Stack
@@ -48,7 +48,7 @@ After re-running, the `*-data.js` files update; commit and push to redeploy.
 
 ## Logo
 
-`generate_logo.py` builds `greybark-logo.png` (1024×1024 pixel-art mark) using
+`generate_logo.py` builds `chapelstreet-logo.png` (1024×1024 pixel-art mark) using
 PIL. Edit constants at the top of the script to tweak.
 
 ## Supabase setup
@@ -66,7 +66,7 @@ host data in tables in a follow-up phase.
    - `http://localhost:8000/email-verified`
    - `https://YOUR-VERCEL-DOMAIN.vercel.app/email-verified`
    - (and any custom domain `/email-verified` once configured)
-4. **Site URL**: set to your Vercel domain (e.g. `https://greybark-systems.vercel.app`).
+4. **Site URL**: set to your Vercel domain (e.g. `https://chapelstreet-research.vercel.app`).
 
 ### Auth pages
 

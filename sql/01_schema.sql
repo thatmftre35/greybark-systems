@@ -1,5 +1,5 @@
 -- =====================================================================
--- GreyBark Systems — Supabase schema
+-- Chapel Street Research — Supabase schema
 -- Run this in the Supabase SQL editor (one time).
 -- =====================================================================
 
