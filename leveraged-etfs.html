@@ -365,10 +365,10 @@ function rebuildIndex() {
 }
 
 /* =========================================================
-   PRICE DATA — fetched on demand from Supabase per symbol.
-   GBSData.loadAllETFRecentReturns() bulk-loads 1Y of daily closes
-   for every ETF (one query) so the cards can show day + 1Y change
-   without N+1 round-trips.
+   PRICE DATA — proxied through /api/prices (Yahoo Finance,
+   edge-cached daily). loadAllETFRecentReturns() summarizes
+   every ETF for the cards; loadETFPrices() pulls the full
+   series for the modal chart.
    ========================================================= */
 
 // Per-symbol cache of full daily+intraday series, fetched lazily on modal open.
@@ -379,10 +379,15 @@ async function getPrices(symbol) {
   return PRICE_CACHE[symbol];
 }
 
-// Pulls list of ETFs from Supabase + recent-returns bulk query, sorts pairs.
+// Pulls list of ETFs from Supabase, then bulk-fetches recent returns from
+// /api/prices for the cards.
 async function loadAndEnrich() {
   ETF_DATA = await window.GBSData.loadETFList();
-  const recent = await window.GBSData.loadAllETFRecentReturns();
+  const symbols = [];
+  ETF_DATA.pairs .forEach(p => { symbols.push(p.bull.symbol, p.bear.symbol); });
+  ETF_DATA.single.forEach(e => { symbols.push(e.symbol); });
+  ETF_DATA.stocks.forEach(p => { symbols.push(p.bull.symbol, p.bear.symbol); });
+  const recent = await window.GBSData.loadAllETFRecentReturns(symbols);
   function enrich(etf) {
     const r = recent[etf.symbol];
     if (!r) return;

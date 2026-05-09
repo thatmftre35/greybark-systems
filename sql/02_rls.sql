@@ -16,12 +16,6 @@ DROP POLICY IF EXISTS "etfs read" ON public.etfs;
 CREATE POLICY "etfs read" ON public.etfs
   FOR SELECT TO anon, authenticated USING (true);
 
--- ETF prices: public read (charts are public)
-ALTER TABLE public.etf_prices ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "etf_prices read" ON public.etf_prices;
-CREATE POLICY "etf_prices read" ON public.etf_prices
-  FOR SELECT TO anon, authenticated USING (true);
-
 -- ETF holdings: AUTHENTICATED ONLY
 ALTER TABLE public.etf_holdings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "etf_holdings read auth" ON public.etf_holdings;

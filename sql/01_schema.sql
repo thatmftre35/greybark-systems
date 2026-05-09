@@ -50,14 +50,7 @@ CREATE TABLE IF NOT EXISTS public.etf_holdings (
 );
 CREATE INDEX IF NOT EXISTS etf_holdings_symbol_idx ON public.etf_holdings(etf_symbol);
 
-CREATE TABLE IF NOT EXISTS public.etf_prices (
-  etf_symbol   TEXT NOT NULL REFERENCES public.etfs(symbol) ON DELETE CASCADE,
-  ts           TIMESTAMPTZ NOT NULL,
-  granularity  TEXT NOT NULL CHECK (granularity IN ('daily','intraday')),
-  close        NUMERIC NOT NULL,
-  PRIMARY KEY (etf_symbol, granularity, ts)
-);
-CREATE INDEX IF NOT EXISTS etf_prices_lookup_idx ON public.etf_prices(etf_symbol, granularity, ts);
+-- (etf_prices was dropped — prices now come live from /api/prices.)
 
 -- ---------------------------------------------------------------------
 -- Funds (institutional)

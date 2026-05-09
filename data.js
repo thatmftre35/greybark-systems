@@ -81,88 +81,29 @@ async function loadETFMeta(symbol) {
 }
 
 /* =========================================================
-   ETF prices — fetched per-symbol, on demand (modal open).
-   Returns { daily: [[dateStr, close], ...], intraday: [[tsStr, close], ...] }
+   ETF prices — proxied through /api/prices (Yahoo Finance).
+   Edge-cached for 24h. Returns:
+     loadETFPrices(sym)            → { daily: [[d, close]], intraday: [[ts, close]] }
+     loadAllETFRecentReturns(syms) → { SYM: { basePrice, dayChange, yearChange } }
    ========================================================= */
-
-function isoToDailyKey(iso)    { return iso.slice(0, 10); }                 // "2025-05-04"
-function isoToIntradayKey(iso) {
-  // Convert ISO UTC → "YYYY-MM-DD HH:MM" in America/New_York
-  const d = new Date(iso);
-  const fmt = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  });
-  const parts = fmt.formatToParts(d);
-  const get = t => parts.find(p => p.type === t).value;
-  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`;
-}
 
 async function loadETFPrices(symbol) {
   if (!symbol) return { daily: [], intraday: [] };
   return cached('etfPrices:' + symbol, FIVE_MIN, async () => {
-    const { data, error } = await window.sb
-      .from('etf_prices')
-      .select('ts, granularity, close')
-      .eq('etf_symbol', symbol)
-      .order('ts');
-    if (error) { console.error('loadETFPrices', symbol, error); return { daily: [], intraday: [] }; }
-    const daily = [], intraday = [];
-    for (const row of data) {
-      if (row.granularity === 'daily') {
-        daily.push([isoToDailyKey(row.ts), Number(row.close)]);
-      } else {
-        intraday.push([isoToIntradayKey(row.ts), Number(row.close)]);
-      }
-    }
-    return { daily, intraday };
+    const r = await fetch(`/api/prices?symbol=${encodeURIComponent(symbol)}&kind=detail`);
+    if (!r.ok) { console.error('loadETFPrices', symbol, r.status); return { daily: [], intraday: [] }; }
+    return await r.json();
   });
 }
 
-/** Bulk-load latest 2 daily closes for every ETF at once — used by the
-    leveraged-etfs.html cards to compute today's % change without N+1 calls. */
-async function loadAllETFRecentReturns() {
-  return cached('etfRecentReturns', FIVE_MIN, async () => {
-    // Pull last ~260 daily rows per ETF via a single big query and bucket client-side.
-    // We rely on (etf_symbol, granularity, ts) index for fast scan.
-    // For 127 ETFs × 260 ≈ 33K rows; ~1MB transferred.
-    const sinceIso = new Date(Date.now() - 380 * 24 * 60 * 60 * 1000).toISOString();
-    const out = {};
-    let from = 0;
-    const PAGE = 1000;
-    while (true) {
-      const { data, error } = await window.sb
-        .from('etf_prices')
-        .select('etf_symbol, ts, close')
-        .eq('granularity', 'daily')
-        .gte('ts', sinceIso)
-        .order('etf_symbol').order('ts')
-        .range(from, from + PAGE - 1);
-      if (error) { console.error('loadAllETFRecentReturns', error); return out; }
-      if (!data.length) break;
-      for (const r of data) {
-        out[r.etf_symbol] = out[r.etf_symbol] || [];
-        out[r.etf_symbol].push([Number(r.close), r.ts]);
-      }
-      if (data.length < PAGE) break;
-      from += PAGE;
-    }
-    // Compute day + 1Y change per symbol
-    const result = {};
-    for (const sym of Object.keys(out)) {
-      const arr = out[sym];
-      if (arr.length < 2) continue;
-      const last = arr[arr.length - 1][0];
-      const prev = arr[arr.length - 2][0];
-      const yearAgo = arr.length >= 252 ? arr[arr.length - 1 - 252][0] : arr[0][0];
-      result[sym] = {
-        basePrice:  last,
-        dayChange:  prev > 0 ? ((last - prev) / prev) * 100 : null,
-        yearChange: yearAgo > 0 ? ((last - yearAgo) / yearAgo) * 100 : null,
-      };
-    }
-    return result;
+/** Returns { SYM: { basePrice, dayChange, yearChange }, ... } via /api/prices. */
+async function loadAllETFRecentReturns(symbols) {
+  if (!symbols || !symbols.length) return {};
+  const sorted = [...new Set(symbols)].sort().join(',');
+  return cached('etfRecentReturns:' + sorted, FIVE_MIN, async () => {
+    const r = await fetch(`/api/prices?symbols=${encodeURIComponent(sorted)}`);
+    if (!r.ok) { console.error('loadAllETFRecentReturns', r.status); return {}; }
+    return await r.json();
   });
 }
 

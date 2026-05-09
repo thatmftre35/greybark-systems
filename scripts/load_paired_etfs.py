@@ -3,7 +3,9 @@
 Load the first batch of 20 paired leveraged ETFs into Supabase:
 - ETF metadata (etfs)
 - Holdings parsed from csvs/<SYMBOL>.csv (etf_holdings)
-- Daily + 1-minute intraday prices via yfinance (etf_prices)
+
+Prices are no longer stored — the live site fetches them from
+/api/prices (Yahoo Finance proxy, edge-cached daily).
 
 Run from project root:  python3 scripts/load_paired_etfs.py
 """
@@ -13,13 +15,10 @@ import datetime as dt
 import os
 import sys
 import time
-from datetime import timedelta, timezone
 from pathlib import Path
 
-from curl_cffi import requests as curl_requests
 from dotenv import load_dotenv
 from supabase import create_client
-import yfinance as yf
 
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env.local")
@@ -30,7 +29,6 @@ if not (SB_URL and SB_KEY):
     sys.exit("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local")
 
 sb = create_client(SB_URL, SB_KEY)
-SESSION = curl_requests.Session(impersonate="chrome")
 CSV_DIR = ROOT / "csvs"
 
 # (bull, bear, name_root, sponsor, leverage_int, underlying)
@@ -116,64 +114,6 @@ def parse_direxion(path):
 
 
 # -----------------------------------------------------------------------------
-# Price fetching (yfinance)
-# -----------------------------------------------------------------------------
-
-def fetch_daily(sym):
-    df = yf.Ticker(sym, session=SESSION).history(
-        period="10y", interval="1d", auto_adjust=False, actions=False)
-    if df is None or df.empty:
-        return []
-    out = []
-    for ts, row in df.iterrows():
-        c = float(row["Close"])
-        if c > 0:
-            out.append((ts.strftime("%Y-%m-%d"), round(c, 2)))
-    return out
-
-
-def fetch_intraday(sym):
-    df = yf.Ticker(sym, session=SESSION).history(
-        period="7d", interval="1m",
-        auto_adjust=False, actions=False, prepost=False)
-    if df is None or df.empty:
-        return []
-    out = []
-    for ts, row in df.iterrows():
-        c = float(row["Close"])
-        if c <= 0:
-            continue
-        try:
-            ts_local = ts.tz_convert("America/New_York")
-        except Exception:
-            ts_local = ts
-        out.append((ts_local.strftime("%Y-%m-%d %H:%M"), round(c, 2)))
-    return out
-
-
-# -----------------------------------------------------------------------------
-# Time-string helpers (mirror migrate_to_supabase.py)
-# -----------------------------------------------------------------------------
-
-def daily_to_iso(d):
-    return d + "T00:00:00Z"
-
-
-ET_OFF_DST    = timedelta(hours=-4)
-ET_OFF_NO_DST = timedelta(hours=-5)
-
-
-def intraday_to_iso(s):
-    try:
-        d = dt.datetime.strptime(s, "%Y-%m-%d %H:%M")
-    except Exception:
-        return None
-    is_dst = 3 <= d.month <= 11
-    off = ET_OFF_DST if is_dst else ET_OFF_NO_DST
-    return (d - off).replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-# -----------------------------------------------------------------------------
 # Supabase upsert helper
 # -----------------------------------------------------------------------------
 
@@ -194,18 +134,7 @@ def upsert_batched(table, rows, on_conflict, batch=1000, label=""):
 # Build & load
 # -----------------------------------------------------------------------------
 
-def build_etf_row(symbol, side, name_root, sponsor, lev_x, underlying, daily_rows):
-    base_price = day_change = year_change = None
-    if daily_rows:
-        last = daily_rows[-1][1]
-        base_price = last
-        if len(daily_rows) >= 2:
-            prev = daily_rows[-2][1]
-            if prev > 0:
-                day_change = round((last - prev) / prev * 100, 2)
-        ya = daily_rows[-253][1] if len(daily_rows) >= 253 else daily_rows[0][1]
-        if ya and ya > 0:
-            year_change = round((last - ya) / ya * 100, 2)
+def build_etf_row(symbol, side, name_root, sponsor, lev_x, underlying):
     leverage_str = ("+" if side == "bull" else "-") + f"{lev_x}x"
     direction    = "Bull" if side == "bull" else "Bear"
     return {
@@ -217,20 +146,19 @@ def build_etf_row(symbol, side, name_root, sponsor, lev_x, underlying, daily_row
         "category":        "pair",
         "side":            side,
         "pair_underlying": underlying,
-        "base_price":      base_price,
-        "day_change":      day_change,
-        "year_change":     year_change,
+        "base_price":      None,
+        "day_change":      None,
+        "year_change":     None,
     }
 
 
 def main():
     etf_rows = []
     holding_rows = []
-    price_rows = []
 
     for bull, bear, name_root, sponsor, lev, underlying in PAIRS:
         for sym, side in [(bull, "bull"), (bear, "bear")]:
-            print(f"\n→ {sym} ({side})")
+            print(f"→ {sym} ({side})")
 
             csv_path = CSV_DIR / f"{sym}.csv"
             as_of, rows = parse_direxion(csv_path)
@@ -248,35 +176,11 @@ def main():
                     "as_of":         as_of,
                 })
 
-            daily = fetch_daily(sym)
-            intraday = fetch_intraday(sym)
-            print(f"   prices:   {len(daily)} daily, {len(intraday)} intraday")
-            time.sleep(0.4)
+            etf_rows.append(build_etf_row(sym, side, name_root, sponsor, lev, underlying))
 
-            for d, c in daily:
-                price_rows.append({
-                    "etf_symbol":  sym,
-                    "ts":          daily_to_iso(d),
-                    "granularity": "daily",
-                    "close":       c,
-                })
-            for ts, c in intraday:
-                iso = intraday_to_iso(ts)
-                if iso:
-                    price_rows.append({
-                        "etf_symbol":  sym,
-                        "ts":          iso,
-                        "granularity": "intraday",
-                        "close":       c,
-                    })
-
-            etf_rows.append(build_etf_row(sym, side, name_root, sponsor, lev, underlying, daily))
-
-    print(f"\n→ Upserting {len(etf_rows)} etfs, "
-          f"{len(holding_rows):,} holdings, {len(price_rows):,} prices")
+    print(f"\n→ Upserting {len(etf_rows)} etfs, {len(holding_rows):,} holdings")
     upsert_batched("etfs", etf_rows, "symbol")
     upsert_batched("etf_holdings", holding_rows, "etf_symbol,rank")
-    upsert_batched("etf_prices", price_rows, "etf_symbol,granularity,ts", batch=2000)
     print("\n✓ Done.")
 
 

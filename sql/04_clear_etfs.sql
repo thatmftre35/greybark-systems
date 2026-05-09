@@ -10,7 +10,6 @@
 -- =====================================================================
 
 TRUNCATE TABLE
-  public.etf_prices,
   public.etf_holdings,
   public.etfs
 RESTART IDENTITY;
