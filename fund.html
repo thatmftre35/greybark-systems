@@ -125,8 +125,7 @@
   </div>
 </footer>
 
-<script src="funds-data.js"></script>
-<script src="stock-info.js"></script>
+<script src="data.js"></script>
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function tick(){
@@ -376,20 +375,22 @@ function fundAuthGateHTML(fundId) {
 
 async function renderFundDetail() {
   const id = getFundId();
-  if (!id || typeof FUNDS === 'undefined' || !FUNDS[id]) {
+  if (!id) {
     document.getElementById('f-name').textContent = 'Fund not found';
-    document.getElementById('f-sub').textContent = id ? `No data for "${id}"` : 'Append ?id=FUND_ID to the URL.';
+    document.getElementById('f-sub').textContent = 'Append ?id=FUND_ID to the URL.';
     return;
   }
-  const f = FUNDS[id];
+
+  const f = await window.GBSData.loadFundDetail(id);
+  if (!f) {
+    document.getElementById('f-name').textContent = 'Fund not found';
+    document.getElementById('f-sub').textContent = `No data for "${id}".`;
+    return;
+  }
   CURRENT_FUND = f;
   document.title = f.name + ' // GreyBark Systems';
   document.getElementById('f-tag').textContent = 'FUND DETAIL // ' + (f.id || '').toUpperCase();
   document.getElementById('f-name').innerHTML = '<span class="hl">' + escapeHtml(f.name) + '</span>';
-
-  const totalUsd = (f.rows || []).reduce((acc, r) => acc + (r.usd || 0), 0);
-  document.getElementById('f-sub').textContent =
-    (f.rows || []).length + ' positions · estimated AUM ' + fmtMoney(totalUsd);
 
   // Stats strip — pulled from precomputed returns
   const r = f.returns || {};
@@ -407,17 +408,32 @@ async function renderFundDetail() {
   `).join('');
   document.getElementById('f-stats').innerHTML = pillHtml;
 
-  // Holdings table — gated behind auth
-  document.getElementById('f-holding-count').textContent = (f.rows || []).length + ' positions';
+  // Pick a default timeframe with data — prefer YTD, fallback ALL
+  const series = f.series || [];
+  let initial = 'YTD';
+  if (!series.length) initial = 'ALL';
+  setTimeframe(initial);
 
+  // Holdings table — auth gated. fund_holdings is RLS-restricted to authenticated.
   const session = await window.GBSAuth.getSession();
   if (!session) {
+    document.getElementById('f-sub').textContent = '— · sign in to see positions';
+    document.getElementById('f-holding-count').textContent = '—';
     document.getElementById('f-table').innerHTML = fundAuthGateHTML(f.id);
-    // Skip remaining holdings rendering (Pick a default chart timeframe still happens below)
-  } else {
+    return;
+  }
 
-  const stockInfo = (typeof STOCK_INFO !== 'undefined') ? STOCK_INFO : {};
-  const rowsHtml = (f.rows || []).map((row, i) => {
+  // Authenticated — pull holdings + stock info in parallel
+  const holdings = await window.GBSData.loadFundHoldings(f.id);
+  const tickers  = holdings.map(h => h.ticker).filter(Boolean);
+  const stockInfo = await window.GBSData.loadStockInfo(tickers);
+
+  const totalUsd = holdings.reduce((acc, h) => acc + (h.usd || 0), 0);
+  document.getElementById('f-sub').textContent =
+    holdings.length + ' positions · estimated AUM ' + fmtMoney(totalUsd);
+  document.getElementById('f-holding-count').textContent = holdings.length + ' positions';
+
+  const rowsHtml = holdings.map((row, i) => {
     const info = stockInfo[row.ticker] || {};
     const name = info.name || '—';
     return `
@@ -444,13 +460,6 @@ async function renderFundDetail() {
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>`;
-  } // end auth-gated holdings block
-
-  // Pick a default timeframe with data — prefer 1Y, fallback ALL
-  const series = f.series || [];
-  let initial = 'YTD';
-  if (!series.length) initial = 'ALL';
-  setTimeframe(initial);
 }
 
 renderFundDetail();

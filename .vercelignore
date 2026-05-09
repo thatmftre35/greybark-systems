@@ -9,6 +9,19 @@ generate_logo.py
 csvs/
 *.xlsx
 
+# JS data files no longer loaded by any page (replaced by Supabase + data.js).
+# Kept in the repo as a backup; just excluded from deploy.
+prices-data.js
+holdings-data.js
+stock-info.js
+
+# Migration scripts directory
+scripts/
+
+# Local secrets
+.env.local
+.env.*.local
+
 # Python cruft
 __pycache__/
 *.pyc

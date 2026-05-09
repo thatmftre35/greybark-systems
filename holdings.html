@@ -79,7 +79,7 @@
   </div>
 </footer>
 
-<script src="holdings-data.js"></script>
+<script src="data.js"></script>
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function tick(){
@@ -89,156 +89,14 @@ function tick(){
 }
 tick(); setInterval(tick, 1000);
 
-/* =========================================================
-   ETF METADATA (mirrors leveraged-etfs.html for display)
-   ========================================================= */
-const ETF_META = {
-  SPXL: { name:'Direxion Daily S&P 500 Bull 3X',           sponsor:'Direxion', leverage:'+3x', underlying:'S&P 500' },
-  SPXS: { name:'Direxion Daily S&P 500 Bear 3X',           sponsor:'Direxion', leverage:'-3x', underlying:'S&P 500' },
-  TNA:  { name:'Direxion Daily Small Cap Bull 3X',         sponsor:'Direxion', leverage:'+3x', underlying:'Russell 2000' },
-  TZA:  { name:'Direxion Daily Small Cap Bear 3X',         sponsor:'Direxion', leverage:'-3x', underlying:'Russell 2000' },
-  HIBL: { name:'Direxion Daily S&P 500 High Beta Bull 3X', sponsor:'Direxion', leverage:'+3x', underlying:'S&P 500 High Beta' },
-  HIBS: { name:'Direxion Daily S&P 500 High Beta Bear 3X', sponsor:'Direxion', leverage:'-3x', underlying:'S&P 500 High Beta' },
-  YINN: { name:'Direxion Daily FTSE China Bull 3X',        sponsor:'Direxion', leverage:'+3x', underlying:'FTSE China 50' },
-  YANG: { name:'Direxion Daily FTSE China Bear 3X',        sponsor:'Direxion', leverage:'-3x', underlying:'FTSE China 50' },
-  EDC:  { name:'Direxion Daily MSCI Emerging Mkts Bull 3X',sponsor:'Direxion', leverage:'+3x', underlying:'MSCI Emerging Markets' },
-  EDZ:  { name:'Direxion Daily MSCI Emerging Mkts Bear 3X',sponsor:'Direxion', leverage:'-3x', underlying:'MSCI Emerging Markets' },
-  LABU: { name:'Direxion Daily S&P Biotech Bull 3X',       sponsor:'Direxion', leverage:'+3x', underlying:'S&P Biotech' },
-  LABD: { name:'Direxion Daily S&P Biotech Bear 3X',       sponsor:'Direxion', leverage:'-3x', underlying:'S&P Biotech' },
-  FAS:  { name:'Direxion Daily Financial Bull 3X',         sponsor:'Direxion', leverage:'+3x', underlying:'Russell 1000 Financial' },
-  FAZ:  { name:'Direxion Daily Financial Bear 3X',         sponsor:'Direxion', leverage:'-3x', underlying:'Russell 1000 Financial' },
-  WEBL: { name:'Direxion Daily Dow Jones Internet Bull 3X',sponsor:'Direxion', leverage:'+3x', underlying:'Dow Jones Internet' },
-  WEBS: { name:'Direxion Daily Dow Jones Internet Bear 3X',sponsor:'Direxion', leverage:'-3x', underlying:'Dow Jones Internet' },
-  DRN:  { name:'Direxion Daily Real Estate Bull 3X',       sponsor:'Direxion', leverage:'+3x', underlying:'MSCI US REIT' },
-  DRV:  { name:'Direxion Daily Real Estate Bear 3X',       sponsor:'Direxion', leverage:'-3x', underlying:'MSCI US REIT' },
-  SOXL: { name:'Direxion Daily Semiconductor Bull 3X',     sponsor:'Direxion', leverage:'+3x', underlying:'PHLX Semiconductor' },
-  SOXS: { name:'Direxion Daily Semiconductor Bear 3X',     sponsor:'Direxion', leverage:'-3x', underlying:'PHLX Semiconductor' },
-  TECL: { name:'Direxion Daily Technology Bull 3X',        sponsor:'Direxion', leverage:'+3x', underlying:'Tech Select Sector' },
-  TECS: { name:'Direxion Daily Technology Bear 3X',        sponsor:'Direxion', leverage:'-3x', underlying:'Tech Select Sector' },
-  TYD:  { name:'Direxion Daily 7-10 Year Treasury Bull 3X',sponsor:'Direxion', leverage:'+3x', underlying:'ICE 7-10 Year Treasury' },
-  TYO:  { name:'Direxion Daily 7-10 Year Treasury Bear 3X',sponsor:'Direxion', leverage:'-3x', underlying:'ICE 7-10 Year Treasury' },
-  TMF:  { name:'Direxion Daily 20+ Year Treasury Bull 3X', sponsor:'Direxion', leverage:'+3x', underlying:'ICE 20+ Year Treasury' },
-  TMV:  { name:'Direxion Daily 20+ Year Treasury Bear 3X', sponsor:'Direxion', leverage:'-3x', underlying:'ICE 20+ Year Treasury' },
-  AIBU: { name:'Direxion Daily AI and Big Data Bull 2X',   sponsor:'Direxion', leverage:'+2x', underlying:'AI & Big Data Index' },
-  AIBD: { name:'Direxion Daily AI and Big Data Bear 2X',   sponsor:'Direxion', leverage:'-2x', underlying:'AI & Big Data Index' },
-  GUSH: { name:'Direxion Daily S&P Oil & Gas E&P Bull 2X', sponsor:'Direxion', leverage:'+2x', underlying:'S&P Oil & Gas E&P' },
-  DRIP: { name:'Direxion Daily S&P Oil & Gas E&P Bear 2X', sponsor:'Direxion', leverage:'-2x', underlying:'S&P Oil & Gas E&P' },
-  JNUG: { name:'Direxion Daily Junior Gold Miners Bull 2X',sponsor:'Direxion', leverage:'+2x', underlying:'MVIS Junior Gold Miners' },
-  JDST: { name:'Direxion Daily Junior Gold Miners Bear 2X',sponsor:'Direxion', leverage:'-2x', underlying:'MVIS Junior Gold Miners' },
-  NUGT: { name:'Direxion Daily Gold Miners Bull 2X',       sponsor:'Direxion', leverage:'+2x', underlying:'NYSE Arca Gold Miners' },
-  DUST: { name:'Direxion Daily Gold Miners Bear 2X',       sponsor:'Direxion', leverage:'-2x', underlying:'NYSE Arca Gold Miners' },
-  TQQQ: { name:'ProShares UltraPro QQQ',                   sponsor:'ProShares',leverage:'+3x', underlying:'Nasdaq 100' },
-  SQQQ: { name:'ProShares UltraPro Short QQQ',             sponsor:'ProShares',leverage:'-3x', underlying:'Nasdaq 100' },
-  QLD:  { name:'ProShares Ultra QQQ',                      sponsor:'ProShares',leverage:'+2x', underlying:'Nasdaq 100' },
-  QID:  { name:'ProShares UltraShort QQQ',                 sponsor:'ProShares',leverage:'-2x', underlying:'Nasdaq 100' },
-  AGQ:  { name:'ProShares Ultra Silver',                   sponsor:'ProShares',leverage:'+2x', underlying:'Silver' },
-  ZSL:  { name:'ProShares UltraShort Silver',              sponsor:'ProShares',leverage:'-2x', underlying:'Silver' },
-  EZJ:  { name:'ProShares Ultra MSCI Japan',               sponsor:'ProShares',leverage:'+2x', underlying:'MSCI Japan' },
-  EWV:  { name:'ProShares UltraShort MSCI Japan',          sponsor:'ProShares',leverage:'-2x', underlying:'MSCI Japan' },
-  UGE:  { name:'ProShares Ultra Consumer Staples',         sponsor:'ProShares',leverage:'+2x', underlying:'Consumer Staples Select' },
-  SZK:  { name:'ProShares UltraShort Consumer Staples',    sponsor:'ProShares',leverage:'-2x', underlying:'Consumer Staples Select' },
-  UBR:  { name:'ProShares Ultra MSCI Brazil Capped',       sponsor:'ProShares',leverage:'+2x', underlying:'MSCI Brazil Capped' },
-  BZQ:  { name:'ProShares UltraShort MSCI Brazil Capped',  sponsor:'ProShares',leverage:'-2x', underlying:'MSCI Brazil Capped' },
-  UPW:  { name:'ProShares Ultra Utilities',                sponsor:'ProShares',leverage:'+2x', underlying:'Utilities Select Sector' },
-  SDP:  { name:'ProShares UltraShort Utilities',           sponsor:'ProShares',leverage:'-2x', underlying:'Utilities Select Sector' },
-  UPV:  { name:'ProShares Ultra FTSE Europe',              sponsor:'ProShares',leverage:'+2x', underlying:'FTSE Developed Europe' },
-  EPV:  { name:'ProShares UltraShort FTSE Europe',         sponsor:'ProShares',leverage:'-2x', underlying:'FTSE Developed Europe' },
-  UCC:  { name:'ProShares Ultra Consumer Discretionary',   sponsor:'ProShares',leverage:'+2x', underlying:'Consumer Discretionary Select' },
-  SCC:  { name:'ProShares UltraShort Consumer Disc.',      sponsor:'ProShares',leverage:'-2x', underlying:'Consumer Discretionary Select' },
-  YCL:  { name:'ProShares Ultra Yen',                      sponsor:'ProShares',leverage:'+2x', underlying:'JPY / USD' },
-  YCS:  { name:'ProShares UltraShort Yen',                 sponsor:'ProShares',leverage:'-2x', underlying:'JPY / USD' },
-  UYM:  { name:'ProShares Ultra Basic Materials',          sponsor:'ProShares',leverage:'+2x', underlying:'Materials Select Sector' },
-  SMN:  { name:'ProShares UltraShort Basic Materials',     sponsor:'ProShares',leverage:'-2x', underlying:'Materials Select Sector' },
-  ULE:  { name:'ProShares Ultra Euro',                     sponsor:'ProShares',leverage:'+2x', underlying:'EUR / USD' },
-  EUO:  { name:'ProShares UltraShort Euro',                sponsor:'ProShares',leverage:'-2x', underlying:'EUR / USD' },
-  UXI:  { name:'ProShares Ultra Industrials',              sponsor:'ProShares',leverage:'+2x', underlying:'Industrials Select Sector' },
-  SIJ:  { name:'ProShares UltraShort Industrials',         sponsor:'ProShares',leverage:'-2x', underlying:'Industrials Select Sector' },
-  BOIL: { name:'ProShares Ultra Bloomberg Natural Gas',    sponsor:'ProShares',leverage:'+2x', underlying:'Bloomberg Natural Gas Sub-Index' },
-  KOLD: { name:'ProShares UltraShort Bloomberg Nat Gas',   sponsor:'ProShares',leverage:'-2x', underlying:'Bloomberg Natural Gas Sub-Index' },
-  UJB:  { name:'ProShares Ultra High Yield',               sponsor:'ProShares',leverage:'+2x', underlying:'Markit iBoxx Liquid HY (HYG)' },
-  SJB:  { name:'ProShares Short High Yield',               sponsor:'ProShares',leverage:'-1x', underlying:'Markit iBoxx Liquid HY (HYG)' },
-  DIG:  { name:'ProShares Ultra Oil & Gas',                sponsor:'ProShares',leverage:'+2x', underlying:'Energy Select Sector' },
-  DUG:  { name:'ProShares UltraShort Oil & Gas',           sponsor:'ProShares',leverage:'-2x', underlying:'Energy Select Sector' },
-  RXL:  { name:'ProShares Ultra Health Care',              sponsor:'ProShares',leverage:'+2x', underlying:'Health Care Select Sector' },
-  RXD:  { name:'ProShares UltraShort Health Care',         sponsor:'ProShares',leverage:'-2x', underlying:'Health Care Select Sector' },
-  UGL:  { name:'ProShares Ultra Gold',                     sponsor:'ProShares',leverage:'+2x', underlying:'Gold (COMEX futures)' },
-  GLL:  { name:'ProShares UltraShort Gold',                sponsor:'ProShares',leverage:'-2x', underlying:'Gold (COMEX futures)' },
-  UYG:  { name:'ProShares Ultra Financials',               sponsor:'ProShares',leverage:'+2x', underlying:'Financials Select Sector' },
-  SKF:  { name:'ProShares UltraShort Financials',          sponsor:'ProShares',leverage:'-2x', underlying:'Financials Select Sector' },
-  // Single-direction (bull-only) — Direxion 3X / 2X
-  DPST: { name:'Direxion Daily Regional Banks Bull 3X',           sponsor:'Direxion', leverage:'+3x', underlying:'S&P Regional Banks Select' },
-  TPOR: { name:'Direxion Daily Transportation Bull 3X',           sponsor:'Direxion', leverage:'+3x', underlying:'Dow Jones Transportation' },
-  RETL: { name:'Direxion Daily Retail Bull 3X',                   sponsor:'Direxion', leverage:'+3x', underlying:'S&P Retail Select' },
-  EURL: { name:'Direxion Daily FTSE Europe Bull 3X',              sponsor:'Direxion', leverage:'+3x', underlying:'FTSE Developed Europe All Cap' },
-  MEXX: { name:'Direxion Daily MSCI Mexico Bull 3X',              sponsor:'Direxion', leverage:'+3x', underlying:'MSCI Mexico IMI 25/50' },
-  KORU: { name:'Direxion Daily MSCI South Korea Bull 3X',         sponsor:'Direxion', leverage:'+3x', underlying:'MSCI Korea 25/50' },
-  DFEN: { name:'Direxion Daily Aerospace & Defense Bull 3X',      sponsor:'Direxion', leverage:'+3x', underlying:'DJ U.S. Select Aerospace & Defense' },
-  NAIL: { name:'Direxion Daily Homebuilders & Supplies Bull 3X',  sponsor:'Direxion', leverage:'+3x', underlying:'DJ U.S. Select Home Construction' },
-  PILL: { name:'Direxion Daily Pharmaceutical & Medical Bull 3X', sponsor:'Direxion', leverage:'+3x', underlying:'DJ U.S. Select Pharmaceuticals' },
-  CWEB: { name:'Direxion Daily CSI China Internet Bull 2X',       sponsor:'Direxion', leverage:'+2x', underlying:'CSI Overseas China Internet' },
-  INDL: { name:'Direxion Daily MSCI India Bull 2X',               sponsor:'Direxion', leverage:'+2x', underlying:'MSCI India' },
-  FNGG: { name:'Direxion Daily NYSE FANG+ Bull 2X',               sponsor:'Direxion', leverage:'+2x', underlying:'NYSE FANG+' },
-  UBOT: { name:'Direxion Daily Robotics, AI & Automation Bull 2X',sponsor:'Direxion', leverage:'+2x', underlying:'Indxx Global Robotics & AI Thematic' },
-  URAA: { name:'Direxion Daily Uranium Industry Bull 2X',         sponsor:'Direxion', leverage:'+2x', underlying:'Solactive United States Uranium' },
-  QQQU: { name:'Direxion Daily Magnificent 7 Bull 2X',            sponsor:'Direxion', leverage:'+2x', underlying:'Solactive Magnificent 7' },
-  // Single-direction (bull-only) — ProShares 2X
-  LTL:  { name:'ProShares Ultra Telecommunications',              sponsor:'ProShares',leverage:'+2x', underlying:'S&P Telecommunications Select' },
-  UCOP: { name:'ProShares Ultra Bloomberg Copper',                sponsor:'ProShares',leverage:'+2x', underlying:'Bloomberg Copper Sub-Index' },
-  UCYB: { name:'ProShares Ultra Nasdaq Cybersecurity',            sponsor:'ProShares',leverage:'+2x', underlying:'Nasdaq CTA Cybersecurity' },
-  UPAL: { name:'ProShares Ultra Bloomberg Palladium',             sponsor:'ProShares',leverage:'+2x', underlying:'Bloomberg Palladium Sub-Index' },
-  UPLT: { name:'ProShares Ultra Bloomberg Platinum',              sponsor:'ProShares',leverage:'+2x', underlying:'Bloomberg Platinum Sub-Index' },
-  SKYU: { name:'ProShares Ultra Cloud Computing',                 sponsor:'ProShares',leverage:'+2x', underlying:'BVP Nasdaq Emerging Cloud' },
-  // Single-stock leveraged pairs — Direxion 2X bull / 1X bear
-  AAPU: { name:'Direxion Daily AAPL Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'AAPL' },
-  AAPD: { name:'Direxion Daily AAPL Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'AAPL' },
-  AMUU: { name:'Direxion Daily AMD Bull 2X',   sponsor:'Direxion', leverage:'+2x', underlying:'AMD' },
-  AMDD: { name:'Direxion Daily AMD Bear 1X',   sponsor:'Direxion', leverage:'-1x', underlying:'AMD' },
-  AMZU: { name:'Direxion Daily AMZN Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'AMZN' },
-  AMZD: { name:'Direxion Daily AMZN Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'AMZN' },
-  AVL:  { name:'Direxion Daily AVGO Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'AVGO' },
-  AVS:  { name:'Direxion Daily AVGO Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'AVGO' },
-  CSCL: { name:'Direxion Daily CSCO Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'CSCO' },
-  CSCS: { name:'Direxion Daily CSCO Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'CSCO' },
-  GGLL: { name:'Direxion Daily GOOGL Bull 2X', sponsor:'Direxion', leverage:'+2x', underlying:'GOOGL' },
-  GGLS: { name:'Direxion Daily GOOGL Bear 1X', sponsor:'Direxion', leverage:'-1x', underlying:'GOOGL' },
-  METU: { name:'Direxion Daily META Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'META' },
-  METD: { name:'Direxion Daily META Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'META' },
-  MSFU: { name:'Direxion Daily MSFT Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'MSFT' },
-  MSFD: { name:'Direxion Daily MSFT Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'MSFT' },
-  MUU:  { name:'Direxion Daily MU Bull 2X',    sponsor:'Direxion', leverage:'+2x', underlying:'MU' },
-  MUD:  { name:'Direxion Daily MU Bear 1X',    sponsor:'Direxion', leverage:'-1x', underlying:'MU' },
-  NFXL: { name:'Direxion Daily NFLX Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'NFLX' },
-  NFXS: { name:'Direxion Daily NFLX Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'NFLX' },
-  NVDU: { name:'Direxion Daily NVDA Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'NVDA' },
-  NVDD: { name:'Direxion Daily NVDA Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'NVDA' },
-  ORCU: { name:'Direxion Daily ORCL Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'ORCL' },
-  ORCS: { name:'Direxion Daily ORCL Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'ORCL' },
-  PALU: { name:'Direxion Daily PANW Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'PANW' },
-  PALD: { name:'Direxion Daily PANW Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'PANW' },
-  PLTU: { name:'Direxion Daily PLTR Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'PLTR' },
-  PLTD: { name:'Direxion Daily PLTR Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'PLTR' },
-  QCMU: { name:'Direxion Daily QCOM Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'QCOM' },
-  QCMD: { name:'Direxion Daily QCOM Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'QCOM' },
-  TSLL: { name:'Direxion Daily TSLA Bull 2X',  sponsor:'Direxion', leverage:'+2x', underlying:'TSLA' },
-  TSLS: { name:'Direxion Daily TSLA Bear 1X',  sponsor:'Direxion', leverage:'-1x', underlying:'TSLA' },
-  TSMX: { name:'Direxion Daily TSM Bull 2X',   sponsor:'Direxion', leverage:'+2x', underlying:'TSM' },
-  TSMZ: { name:'Direxion Daily TSM Bear 1X',   sponsor:'Direxion', leverage:'-1x', underlying:'TSM' },
-};
 
 /* =========================================================
-   HOLDINGS DATA
-   Loaded from holdings-data.js (generated by parse_holdings.py).
-   Shape: HOLDINGS[SYMBOL] = { asOf, rows: [{ ticker, name, shares, value, weight, type }] }
+   RENDER — pulls metadata + holdings from Supabase via data.js.
+   The etf_holdings table is gated by RLS to authenticated users.
    ========================================================= */
-// HOLDINGS comes from holdings-data.js loaded above.
-
-/* =========================================================
-   RENDER
-   ========================================================= */
-function getEtf() {
+function getEtfSymbol() {
   const params = new URLSearchParams(window.location.search);
-  const sym = (params.get('etf') || '').toUpperCase();
-  return { symbol: sym, meta: ETF_META[sym] };
+  return (params.get('etf') || '').toUpperCase();
 }
 
 function fmtNum(n) {
@@ -275,15 +133,27 @@ function authGateHTML(symbol) {
 }
 
 async function render() {
-  const { symbol, meta } = getEtf();
-
-  if (!symbol || !meta) {
+  const symbol = getEtfSymbol();
+  if (!symbol) {
     document.getElementById('h-tag').textContent = 'NO ETF SELECTED';
     document.getElementById('h-symbol').textContent = '—';
     document.getElementById('h-name').textContent = 'Append ?etf=SYMBOL to the URL to view holdings.';
     document.getElementById('holdings-content').innerHTML = `
       <div class="holdings-empty">
         <div class="big">No ETF selected</div>
+        <div>Return to the <a href="leveraged-etfs.html">Leveraged ETFs</a> page and click an ETF.</div>
+      </div>`;
+    return;
+  }
+
+  const meta = await window.GBSData.loadETFMeta(symbol);
+  if (!meta) {
+    document.getElementById('h-tag').textContent = symbol + ' // NOT FOUND';
+    document.getElementById('h-symbol').textContent = symbol;
+    document.getElementById('h-name').textContent = 'No data for "' + symbol + '".';
+    document.getElementById('holdings-content').innerHTML = `
+      <div class="holdings-empty">
+        <div class="big">ETF not found</div>
         <div>Return to the <a href="leveraged-etfs.html">Leveraged ETFs</a> page and click an ETF.</div>
       </div>`;
     return;
@@ -305,7 +175,7 @@ async function render() {
     return;
   }
 
-  const data = HOLDINGS[symbol];
+  const data = await window.GBSData.loadETFHoldings(symbol);
   if (!data || !data.rows || !data.rows.length) {
     document.getElementById('h-asof').textContent = '—';
     document.getElementById('holdings-content').innerHTML = `
