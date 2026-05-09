@@ -1,6 +1,6 @@
-# Chapel Street Research
+# Chapel Street
 
-Static site for Chapel Street Research — quantitative strategies for leveraged ETFs,
+Static site for Chapel Street — quantitative strategies for leveraged ETFs,
 institutional holdings, insider trades, and federal contracts.
 
 ## Stack

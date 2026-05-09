@@ -1,7 +1,7 @@
 """
-Chapel Street Research — pixel logo generator.
-Renders a "CS" monogram with "RESEARCH" wordmark below, at low logical
-resolution then scales up with nearest-neighbor to keep crisp pixel edges.
+Chapel Street — pixel logo generator.
+Renders a "CS" monogram at low logical resolution then scales up with
+nearest-neighbor to keep crisp pixel edges at the final size.
 """
 
 from PIL import Image, ImageDraw
@@ -370,25 +370,19 @@ def build_logo(logical_size=128, scale=8):
         d.rectangle([cx, min(y0, y1), cx + (bw - 1), max(y0, y1)],
                     fill=BLUE)
 
-    # ---- big "CS" monogram (9x12 glyphs scaled up) ----
+    # ---- big "CS" monogram, centered ----
     cs_scale = 5
     cs = "CS"
     cs_w = measure_9x12(cs, scale=cs_scale)
     cs_h = 12 * cs_scale
     cx_logo = (W - cs_w) // 2
-    cy_logo = 18
+    cy_logo = (H - cs_h) // 2
     text_9x12(d, cs, cx_logo, cy_logo, BLUE, scale=cs_scale)
 
-    # ---- "RESEARCH" wordmark below ----
-    word = "RESEARCH"
-    word_w = measure_9x12(word)
-    wx = (W - word_w) // 2
-    wy = 94
-    text_9x12(d, word, wx, wy, WHITE)
-
-    # underline accent under wordmark
+    # underline accent under monogram
     ul_pad = 4
-    d.rectangle([wx - ul_pad, wy + 14, wx + word_w + ul_pad - 1, wy + 14], fill=BLUE)
+    ul_y = cy_logo + cs_h + 4
+    d.rectangle([cx_logo - ul_pad, ul_y, cx_logo + cs_w + ul_pad - 1, ul_y], fill=BLUE)
 
     # ---- scale up with nearest-neighbor for crisp pixels ----
     big = img.resize((W * scale, H * scale), Image.NEAREST)
