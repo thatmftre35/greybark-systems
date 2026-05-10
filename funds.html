@@ -65,9 +65,14 @@
     <span class="ix-name">Top 20 Performing Funds (over $100M AUM)</span>
     <span class="ix-count" id="ix-top20">— funds</span>
   </a>
+  <a href="#top20under" id="cat-top20under">
+    <span class="ix-id">// 02</span>
+    <span class="ix-name">Top 20 Under $100M AUM</span>
+    <span class="ix-count" id="ix-top20under">— funds</span>
+  </a>
 </div>
 
-<!-- ===== TOP 20 SECTION ===== -->
+<!-- ===== TOP 20 (over $100M) ===== -->
 <div class="cat-block" id="top20">
   <div class="cat-head">
     <div class="cat-num">// 01</div>
@@ -82,6 +87,20 @@
   fall back to ALL-period return.
 </p>
 <div id="fund-grid" class="fund-grid"></div>
+
+<!-- ===== TOP 20 (under $100M) ===== -->
+<div class="cat-block" id="top20under">
+  <div class="cat-head">
+    <div class="cat-num">// 02</div>
+    <h2>Top 20 Under $100M AUM</h2>
+    <div class="cat-meta">backtest_engine</div>
+  </div>
+</div>
+<p class="cat-desc">
+  Smaller-AUM institutional funds, ranked by <strong>trailing 1-year backtest return</strong>
+  on the same engine — current weights held against real daily price history.
+</p>
+<div id="fund-grid-under" class="fund-grid"></div>
 
 <!-- ===== CTA ===== -->
 <div class="cta">
@@ -108,6 +127,7 @@
 </footer>
 
 <script src="funds-data.js"></script>
+<script src="funds-under-aum-data.js"></script>
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function tick(){
@@ -137,14 +157,13 @@ function fmtMoney(n) {
   return '$' + n.toFixed(0);
 }
 
-function renderTop20() {
-  const cat = (typeof FUND_CATEGORIES !== 'undefined') ? FUND_CATEGORIES.top20 : null;
-  const grid = document.getElementById('fund-grid');
+function renderCategory(catId, gridId, ixCountId) {
+  const cat = (typeof FUND_CATEGORIES !== 'undefined') ? FUND_CATEGORIES[catId] : null;
+  const grid = document.getElementById(gridId);
   if (!cat || typeof FUNDS === 'undefined') {
-    grid.innerHTML = '<div class="holdings-empty"><div class="big">No fund data loaded</div><div>Run parse_funds.py and reload.</div></div>';
+    grid.innerHTML = '<div class="holdings-empty"><div class="big">No fund data loaded</div><div>Run the loader and reload.</div></div>';
     return;
   }
-  // Build list, sort by 1Y return desc (fallback to ALL)
   const list = cat.fundIds
     .map(id => FUNDS[id])
     .filter(Boolean)
@@ -156,7 +175,8 @@ function renderTop20() {
     }))
     .sort((a, b) => (b.yr ?? -Infinity) - (a.yr ?? -Infinity));
 
-  document.getElementById('ix-top20').textContent = list.length + ' funds';
+  const ixEl = document.getElementById(ixCountId);
+  if (ixEl) ixEl.textContent = list.length + ' funds';
 
   grid.innerHTML = list.map((item, i) => {
     const f = item.f;
@@ -189,7 +209,8 @@ function renderTop20() {
   }).join('');
 }
 
-renderTop20();
+renderCategory('top20',      'fund-grid',       'ix-top20');
+renderCategory('top20under', 'fund-grid-under', 'ix-top20under');
 </script>
 </body>
 </html>
