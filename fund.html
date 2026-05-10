@@ -126,6 +126,8 @@
 </footer>
 
 <script src="data.js"></script>
+<script src="funds-data.js"></script>
+<script src="funds-under-aum-data.js"></script>
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function tick(){
@@ -381,7 +383,9 @@ async function renderFundDetail() {
     return;
   }
 
-  const f = await window.GBSData.loadFundDetail(id);
+  // Read from the JS globals loaded above (funds-data.js + funds-under-aum-data.js)
+  // — instant, no Supabase round-trip, works for every fund the site knows about.
+  const f = (typeof FUNDS !== 'undefined') ? FUNDS[id] : null;
   if (!f) {
     document.getElementById('f-name').textContent = 'Fund not found';
     document.getElementById('f-sub').textContent = `No data for "${id}".`;
@@ -414,7 +418,7 @@ async function renderFundDetail() {
   if (!series.length) initial = 'ALL';
   setTimeframe(initial);
 
-  // Holdings table — auth gated. fund_holdings is RLS-restricted to authenticated.
+  // Holdings table — client-side auth gating only (data is local).
   const session = await window.GBSAuth.getSession();
   if (!session) {
     document.getElementById('f-sub').textContent = '— · sign in to see positions';
@@ -423,8 +427,7 @@ async function renderFundDetail() {
     return;
   }
 
-  // Authenticated — pull holdings + stock info in parallel
-  const holdings = await window.GBSData.loadFundHoldings(f.id);
+  const holdings = f.rows || [];
   const tickers  = holdings.map(h => h.ticker).filter(Boolean);
   const stockInfo = await window.GBSData.loadStockInfo(tickers);
 
