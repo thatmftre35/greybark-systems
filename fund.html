@@ -428,41 +428,50 @@ async function renderFundDetail() {
   }
 
   const holdings = f.rows || [];
-  const tickers  = holdings.map(h => h.ticker).filter(Boolean);
-  const stockInfo = await window.GBSData.loadStockInfo(tickers);
-
   const totalUsd = holdings.reduce((acc, h) => acc + (h.usd || 0), 0);
   document.getElementById('f-sub').textContent =
     holdings.length + ' positions · estimated AUM ' + fmtMoney(totalUsd);
   document.getElementById('f-holding-count').textContent = holdings.length + ' positions';
 
-  const rowsHtml = holdings.map((row, i) => {
-    const info = stockInfo[row.ticker] || {};
-    const name = info.name || '—';
-    return `
-      <tr>
-        <td class="rank">${(i+1).toString().padStart(2,'0')}</td>
-        <td class="ticker">${escapeHtml(row.ticker)}</td>
-        <td class="name">${escapeHtml(name)}</td>
-        <td class="num">${fmtNum(row.shares)}</td>
-        <td class="num">${fmtMoney(row.usd)}</td>
-        <td class="weight">${(row.weight ?? 0).toFixed(2)}%</td>
-      </tr>`;
-  }).join('');
-  document.getElementById('f-table').innerHTML = `
-    <table class="holdings-table">
-      <thead>
+  const renderTable = (stockInfo) => {
+    const rowsHtml = holdings.map((row, i) => {
+      const info = (stockInfo && stockInfo[row.ticker]) || {};
+      const name = info.name || '—';
+      return `
         <tr>
-          <th>#</th>
-          <th>Ticker</th>
-          <th>Name</th>
-          <th style="text-align:right;">Shares</th>
-          <th style="text-align:right;">Value</th>
-          <th style="text-align:right;">Weight</th>
-        </tr>
-      </thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>`;
+          <td class="rank">${(i+1).toString().padStart(2,'0')}</td>
+          <td class="ticker">${escapeHtml(row.ticker)}</td>
+          <td class="name">${escapeHtml(name)}</td>
+          <td class="num">${fmtNum(row.shares)}</td>
+          <td class="num">${fmtMoney(row.usd)}</td>
+          <td class="weight">${(row.weight ?? 0).toFixed(2)}%</td>
+        </tr>`;
+    }).join('');
+    document.getElementById('f-table').innerHTML = `
+      <table class="holdings-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th style="text-align:right;">Shares</th>
+            <th style="text-align:right;">Value</th>
+            <th style="text-align:right;">Weight</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>`;
+  };
+
+  // Render immediately with no name enrichment so the table is always visible.
+  // Then upgrade in-place if Supabase stock_info comes back successfully.
+  renderTable({});
+  const tickers = holdings.map(h => h.ticker).filter(Boolean);
+  if (tickers.length) {
+    window.GBSData.loadStockInfo(tickers)
+      .then(info => renderTable(info))
+      .catch(err => console.error('stockInfo enrichment failed', err));
+  }
 }
 
 renderFundDetail();
