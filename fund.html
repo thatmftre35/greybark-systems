@@ -418,15 +418,9 @@ async function renderFundDetail() {
   if (!series.length) initial = 'ALL';
   setTimeframe(initial);
 
-  // Holdings table — client-side auth gating only (data is local).
-  const session = await window.GBSAuth.getSession();
-  if (!session) {
-    document.getElementById('f-sub').textContent = '— · sign in to see positions';
-    document.getElementById('f-holding-count').textContent = '—';
-    document.getElementById('f-table').innerHTML = fundAuthGateHTML(f.id);
-    return;
-  }
-
+  // Holdings — render directly from the JS globals. (Data is already in
+  // a publicly-served JS file, so auth-gating the table here provided no
+  // real security and was killing the render when Supabase auth hiccupped.)
   const holdings = f.rows || [];
   const totalUsd = holdings.reduce((acc, h) => acc + (h.usd || 0), 0);
   document.getElementById('f-sub').textContent =
