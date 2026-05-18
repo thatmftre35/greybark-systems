@@ -379,25 +379,11 @@ async function getPrices(symbol) {
   return PRICE_CACHE[symbol];
 }
 
-// Pulls list of ETFs from Supabase, then bulk-fetches recent returns from
-// /api/prices for the cards.
+// Pulls list of ETFs from Supabase. The cards read base_price /
+// day_change / year_change straight from the etfs table — those
+// columns are refreshed by scripts/refresh_etf_prices.py (run daily).
 async function loadAndEnrich() {
   ETF_DATA = await window.GBSData.loadETFList();
-  const symbols = [];
-  ETF_DATA.pairs .forEach(p => { symbols.push(p.bull.symbol, p.bear.symbol); });
-  ETF_DATA.single.forEach(e => { symbols.push(e.symbol); });
-  ETF_DATA.stocks.forEach(p => { symbols.push(p.bull.symbol, p.bear.symbol); });
-  const recent = await window.GBSData.loadAllETFRecentReturns(symbols);
-  function enrich(etf) {
-    const r = recent[etf.symbol];
-    if (!r) return;
-    if (r.basePrice  != null) etf.basePrice  = r.basePrice;
-    if (r.dayChange  != null) etf.dayChange  = r.dayChange;
-    if (r.yearChange != null) etf.yearChange = r.yearChange;
-  }
-  ETF_DATA.pairs.forEach(p => { enrich(p.bull); enrich(p.bear); });
-  ETF_DATA.single.forEach(enrich);
-  ETF_DATA.stocks.forEach(p => { enrich(p.bull); enrich(p.bear); });
 
   const pairSort = (a, b) => {
     const av = (a.bull.yearChange == null) ? -Infinity : a.bull.yearChange;
